@@ -1,10 +1,9 @@
 # Moonlight
-Moonlight is a lightweight JSON-database for Python.
+<img src="https://i.ibb.co/5k9N9tR/Frame-4.png" alt="Moonlight Logo" height="150" />
 
+<br>
 
-![Moonlight](https://ibb.co/vhB7Bgj)
-
-## Lightweight JSON database library for Python
+____Moonlight___ is a lightweight JSON-database for Python._
 
 ### Installing database library
 ```bash
