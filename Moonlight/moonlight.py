@@ -1,7 +1,7 @@
 from filelock import FileLock
 from uuid     import uuid4 
 
-from Moonlight.messages import Message
+from messages import Message
 
 import json
 import os
@@ -10,10 +10,7 @@ EMPTY: dict[str, list] = {
     'data' : []
 }
 
-def init_database(filename: str):
-    if not filename.endswith('.json'): 
-        filename += '.json'
-    
+def init_database(filename: str):    
     if os.path.exists(filename): return
 
     with open(filename, 'w', encoding = 'utf-8') as database_file:
@@ -33,9 +30,12 @@ class Moonlight:
                 * 'error'
     """
     def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
+        filename = str(filename)
+        filename += '' if filename.endswith('.json') else '.json'
+        
         init_database(filename)
 
-        self.__primary_key = primary_key
+        self.__primary_key = str(primary_key)
         self.filename      = filename
         self.lock          = FileLock(f'{self.filename}.lock')
         self.show_messages = show_messages
@@ -55,7 +55,7 @@ class Moonlight:
 
         @returns {id: int}.
         """
-        if data_to_push == {}:
+        if data_to_push == {} or not data_to_push:
             if 'error' in self.show_messages: Message(f'Nothing to push [from `{self.filename}`: push({data_to_push})] \n\n>>> Query is empty', 'err')()
             
             return -1

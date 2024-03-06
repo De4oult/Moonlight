@@ -1,0 +1,13 @@
+{
+    "data": [
+        {
+            "id": 75815953098458,
+            "filename": "test",
+            "primary_key": "id",
+            "show_messages": [
+                "warning",
+                "error"
+            ]
+        }
+    ]
+}
