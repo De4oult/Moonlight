@@ -21,10 +21,18 @@ def init_database(filename: str):
 
 
 class Moonlight:
-    def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
-        """
+    """
+        class Moonlight
         
-        """
+        arguments
+            - filename      (str)        <- path to database .json-file
+            - primary_key   (str)        <- primary key name (default: 'id') 
+            - show_messages (tuple[str]) <- tuple of messages that will be output during operation (default: ('warning', 'error'))
+                * 'success'
+                * 'warning'
+                * 'error'
+    """
+    def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
         init_database(filename)
 
         self.__primary_key = primary_key
@@ -39,6 +47,14 @@ class Moonlight:
 
     # Database methods hier
     async def push(self, data_to_push: dict[str, any]) -> int:
+        """
+        Adds an object with the given fields to the database
+
+        arguments
+            - data_to_push (dict[str, any]) <- the key-value dictionary to be added to the database
+
+        @returns {id: int}.
+        """
         if data_to_push == {}:
             if 'error' in self.show_messages: Message(f'Nothing to push [from `{self.filename}`: push({data_to_push})] \n\n>>> Query is empty', 'err')()
             
@@ -56,16 +72,29 @@ class Moonlight:
 
                 if 'success' in self.show_messages: Message(f'Pushed [from `{self.filename}`: push({data_to_push})]', 'suc')()
 
-                return data_to_push[self.__primary_key]
+                return data_to_push.get(self.__primary_key)
 
     async def all(self) -> list[dict[str, any]]:
+        """
+        Get all objects from the database
+
+        @returns {all_objects: list[dict[str, any]]}.
+        """
         with self.lock:
             with open(self.filename, 'r', encoding = 'utf-8') as database_file:
                 if 'success' in self.show_messages: Message(f'Returned [from `{self.filename}`: all()]', 'suc')()
                 
-                return self.__get_load_func()(database_file)['data']
+                return self.__get_load_func()(database_file).get('data')
             
     async def get(self, query: dict[str, any]) -> list[dict[str, any]]:
+        """
+        Get object/s from the database by query
+
+        arguments
+            - query (dict[str, any]) <- the key-value dictionary to find in database
+
+        @returns {object/s: list[dict[str, any]]}.
+        """
         if query == {}:
             if 'error' in self.show_messages: Message(f'No query [from `{self.filename}`: get({query})] \n\n>>> Query is empty', 'err')()
             
@@ -90,6 +119,14 @@ class Moonlight:
                 return result
             
     async def update(self, data_to_update: dict[str, any]) -> int:
+        """
+        Update object in the database
+
+        arguments
+            - data_to_update (dict[str, any]) <- the key-value dictionary to change in object in database (`id` in `data_to_update` required!)
+
+        @returns {id: int}.
+        """
         if not data_to_update.get(self.__primary_key): 
             if 'error' in self.show_messages: Message(f'{self.__primary_key} not specified [from `{self.filename}`: update({data_to_update})] \n\n>>> No `{self.__primary_key}` in {data_to_update}', 'err')()
             
@@ -124,6 +161,14 @@ class Moonlight:
                 return data_to_update.get(self.__primary_key)
 
     async def delete(self, id: int) -> dict[str, any]:
+        """
+        Remove object from the database
+
+        arguments
+            - id (int) <- primary key of object in database to delete
+
+        @returns {object: dict[str, any]}.
+        """
         with self.lock:
             with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
                 database_data = self.__get_load_func()(database_file)
@@ -155,6 +200,9 @@ class Moonlight:
                 return deleted_data
             
     async def drop(self) -> None:
+        """
+        Remove all database data
+        """
         with self.lock:
             with open(self.filename, 'w', encoding = 'utf-8') as database_file:
                 if 'success' in self.show_messages: Message(f'Database drop [from `{self.filename}`: drop()', 'suc')()
