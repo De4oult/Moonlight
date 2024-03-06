@@ -201,7 +201,7 @@ class Moonlight:
             
     async def drop(self) -> None:
         """
-        Remove all database data
+        Removes all database data
         """
         with self.lock:
             with open(self.filename, 'w', encoding = 'utf-8') as database_file:
