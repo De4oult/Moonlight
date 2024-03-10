@@ -29,6 +29,8 @@ def create_application():
                 'description' : 'Name of database required!'
             })
 
+        # check if database already exists
+
         id = await databases.push({
             'filename'      : filename,
             'primary_key'   : primary_key, 

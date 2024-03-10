@@ -2,6 +2,7 @@ from filelock import FileLock
 from uuid     import uuid4 
 
 from Moonlight.messages import Message
+from Moonlight.logger   import Logger
 
 import json
 import os
@@ -26,19 +27,19 @@ class Moonlight:
             - primary_key   (str)        <- primary key name (default: 'id') 
             - show_messages (tuple[str]) <- tuple of messages that will be output during operation (default: ('warning', 'error'))
                 * 'success'
+                * 'info'
                 * 'warning'
                 * 'error'
     """
     def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
-        filename = str(filename)
-        filename += '' if filename.endswith('.json') else '.json'
+        self.filename = str(filename)
+        self.filename += '' if filename.endswith('.json') else '.json'
         
-        init_database(filename)
+        init_database(self.filename)
 
         self.__primary_key = str(primary_key)
-        self.filename      = filename
         self.lock          = FileLock(f'{self.filename}.lock')
-        self.show_messages = show_messages
+        self.logger        = Logger(self.filename, show_messages)
 
     def __get_id(self) -> int:           return int(str(uuid4().int)[:14])
     def __cast_id(self, id: int) -> int: return int(id)
@@ -56,7 +57,7 @@ class Moonlight:
         @returns {id: int}.
         """
         if data_to_push == {} or not data_to_push:
-            if 'error' in self.show_messages: Message(f'Nothing to push [from `{self.filename}`: push({data_to_push})] \n\n>>> Query is empty', 'err')()
+            await self.logger.write(f'Nothing to push [from `{self.filename}`: push({data_to_push})] \n\n>>> Query is empty', 'error')
             
             return -1
 
@@ -70,7 +71,7 @@ class Moonlight:
                 database_file.seek(0)
                 self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
 
-                if 'success' in self.show_messages: Message(f'Pushed [from `{self.filename}`: push({data_to_push})]', 'suc')()
+                await self.logger.write(f'Pushed [from `{self.filename}`: push({data_to_push})]', 'success')
 
                 return data_to_push.get(self.__primary_key)
 
@@ -82,7 +83,7 @@ class Moonlight:
         """
         with self.lock:
             with open(self.filename, 'r', encoding = 'utf-8') as database_file:
-                if 'success' in self.show_messages: Message(f'Returned [from `{self.filename}`: all()]', 'suc')()
+                await self.logger.write(f'Returned [from `{self.filename}`: all()]', 'success')
                 
                 return self.__get_load_func()(database_file).get('data')
             
@@ -96,7 +97,7 @@ class Moonlight:
         @returns {object/s: list[dict[str, any]]}.
         """
         if query == {}:
-            if 'error' in self.show_messages: Message(f'No query [from `{self.filename}`: get({query})] \n\n>>> Query is empty', 'err')()
+            await self.logger.write(f'No query [from `{self.filename}`: get({query})] \n\n>>> Query is empty', 'error')
             
             return []
 
@@ -111,10 +112,10 @@ class Moonlight:
                         result.append(data)
 
                 if result == []:
-                    if 'error' in self.show_messages: Message(f'Nothing to get [from `{self.filename}`: get({query})] \n\n>>> No element with {query}', 'err')()
+                    await self.logger.write(f'Nothing to get [from `{self.filename}`: get({query})] \n\n>>> No element with {query}', 'error')
                     return []
 
-                if 'success' in self.show_messages: Message(f'Returned [from `{self.filename}`: get({query})]', 'suc')()
+                await self.logger.write(f'Returned [from `{self.filename}`: get({query})]', 'success')
 
                 return result
             
@@ -128,7 +129,7 @@ class Moonlight:
         @returns {id: int}.
         """
         if not data_to_update.get(self.__primary_key): 
-            if 'error' in self.show_messages: Message(f'{self.__primary_key} not specified [from `{self.filename}`: update({data_to_update})] \n\n>>> No `{self.__primary_key}` in {data_to_update}', 'err')()
+            await self.logger.write(f'{self.__primary_key} not specified [from `{self.filename}`: update({data_to_update})] \n\n>>> No `{self.__primary_key}` in {data_to_update}', 'error')
             
             return -1
         
@@ -146,7 +147,7 @@ class Moonlight:
                     result.append(data)
 
                 if not updated:
-                    if 'err' in self.show_messages: Message(f'Nothing to update [from `{self.filename}`: update({data_to_update})] \n\n>>> Element with {self.__primary_key}=`{data_to_update.get(self.__primary_key)}` was not found', 'err')()
+                    await self.logger.write(f'Nothing to update [from `{self.filename}`: update({data_to_update})] \n\n>>> Element with {self.__primary_key}=`{data_to_update.get(self.__primary_key)}` was not found', 'error')
                     
                     return -1
 
@@ -156,7 +157,7 @@ class Moonlight:
 
                 self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
 
-                if 'success' in self.show_messages: Message(f'Updated [from `{self.filename}`: update({data_to_update})', 'suc')()
+                await self.logger.write(f'Updated [from `{self.filename}`: update({data_to_update})', 'success')
 
                 return data_to_update.get(self.__primary_key)
 
@@ -185,7 +186,7 @@ class Moonlight:
                     else: result.append(data)
 
                 if not founded:
-                    if 'error' in self.show_messages: Message(f'Nothing to delete [from `{self.filename}`: delete({id})] \n\n>>> Element with {self.__primary_key}=`{id}` was not found', 'err')()
+                    await self.logger.write(f'Nothing to delete [from `{self.filename}`: delete({id})] \n\n>>> Element with {self.__primary_key}=`{id}` was not found', 'error')
                     
                     return
                 
@@ -195,7 +196,7 @@ class Moonlight:
 
                 self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
 
-                if 'success' in self.show_messages: Message(f'Deleted [from `{self.filename}`: delete({id})', 'suc')()
+                await self.logger.write(f'Deleted [from `{self.filename}`: delete({id})', 'success')
 
                 return deleted_data
             
@@ -206,7 +207,7 @@ class Moonlight:
         if os.path.isfile(self.filename):
             os.remove(self.filename)
 
-        if 'success' in self.show_messages: Message(f'Database drop [from `{self.filename}`: drop()', 'suc')()
+        await self.logger.write(f'Database drop [from `{self.filename}`: drop()', 'success')
 
 
     # Tools

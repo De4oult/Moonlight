@@ -41,6 +41,7 @@ database: Moonlight = Moonlight('../databases/database.json')
 - ___primary_key___   - primary key name (default: _'id'_) 
 - ___show_messages___ - tuple of messages that will be output during operation (default: _('warning', 'error')_)
     * _'success'_
+    * _'info'_
     * _'warning'_
     * _'error'_
 
