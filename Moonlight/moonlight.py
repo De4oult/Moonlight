@@ -1,7 +1,7 @@
 from filelock import FileLock
 from uuid     import uuid4 
 
-from messages import Message
+from Moonlight.messages import Message
 
 import json
 import os
@@ -201,10 +201,43 @@ class Moonlight:
             
     async def drop(self) -> None:
         """
-        Removes all database data
+        Removes database file
         """
-        with self.lock:
-            with open(self.filename, 'w', encoding = 'utf-8') as database_file:
-                if 'success' in self.show_messages: Message(f'Database drop [from `{self.filename}`: drop()', 'suc')()
+        if os.path.isfile(self.filename):
+            os.remove(self.filename)
 
-                json.dump(EMPTY, database_file, indent = 4)
+        if 'success' in self.show_messages: Message(f'Database drop [from `{self.filename}`: drop()', 'suc')()
+
+
+    # Tools
+    async def contains(self, key: str, value: any) -> bool:
+        """
+        Checks if database contains `key` where `value`
+
+        arguments
+            - key   (str)
+            - value (any)
+
+        @returns {contains: bool}.
+        """
+        return True if (await self.get({ key : value})) != [] else False
+    
+    async def length(self) -> int:
+        """
+        Returns count of objects in database
+
+        @returns {length: int}.
+        """
+        return len(await self.all())
+
+    async def count(self, key: str, value, any) -> int:
+        """
+        Returns count of objects in database where `key` is `value`
+
+        arguments
+            - key   (str)
+            - value (any)
+
+        @returns {count: int}.
+        """
+        return len(await self.get({ key : value}))

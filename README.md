@@ -21,6 +21,9 @@ Has the following set of methods:
 3. async update()
 5. async delete()
 6. async drop()
+7. async contains()
+8. async length()
+9. async count()
 ```
 
 ### Creating database
@@ -44,15 +47,7 @@ database: Moonlight = Moonlight('../databases/database.json')
 <br>
 
 ### Methods
-<h3>Method examples will be given using the database variable we set. </h3>
-
-### Quick Methods
-* ### [0. Moonlight.push](https://github.com/De4oult/Moonlight#push)
-* ### [1. Moonlight.all](https://github.com/De4oult/Moonlight#all)
-* ### [2. Moonlight.get](https://github.com/De4oult/Moonlight#get)
-* ### [3. Moonlight.update](https://github.com/De4oult/Moonlight#update)
-* ### [5. Moonlight.delete](https://github.com/De4oult/Moonlight#delete)
-* ### [6. Moonlight.drop](https://github.com/De4oult/Moonlight#drop)
+Method examples will be given using the database variable we set
 
 #### push()
 Adds an object with the given fields to the database <br>
@@ -180,17 +175,54 @@ await database.delete(22104564398807)
 ```
 
 #### drop()
-Removes all database data
-
-<br>
+Removes database file
 
 ```Python
 await database.drop()
+```
 
-# database-file writes >>
-# {
-#   "data": []
-# }
+#### contains()
+Checks if `key` has a `value` in database <br>
+
+#### Arguments
+- ___key___   (__str__)
+- ___value___ (__any__)
+
+Returns ___contains___ (__bool__)
+
+```Python
+await database.contains('name', 'Bertram Gilfoyle')
+
+# will returned >>
+#   True
+```
+
+#### length()
+Returns count of objects in database <br>
+
+Returns ___length___ (__int__)
+
+```Python
+await database.length()
+
+# will returned >>
+#   1
+```
+
+#### count()
+Returns count of objects in database where `key` is `value` <br>
+
+#### Arguments
+- ___key___   (__str__)
+- ___value___ (__any__)
+
+Returns ___count___ (__int__)
+
+```Python
+await database.count('name', 'Bertram Gilfoyle')
+
+# will returned >>
+#   1
 ```
 
 ## Author

@@ -4,6 +4,7 @@ class Message:
     """
     class Message used to issue messages:
         success
+        info
         warnings
         errors
 
@@ -16,6 +17,7 @@ class Message:
     def __call__(self) -> None:
         match self.type:
             case 'suc':  print(Fore.GREEN  + f'Success: {self.text}' + Style.RESET_ALL)
+            case 'info': print(Fore.BLUE   + f'Info: {self.text}' + Style.RESET_ALL)
             case 'warn': print(Fore.YELLOW + f'Warning: {self.text}' + Style.RESET_ALL)
-            case 'err':  print(Fore.RED    +   f'Error: {self.text}' + Style.RESET_ALL)
+            case 'err':  print(Fore.RED    + f'Error: {self.text}' + Style.RESET_ALL)
             case _: return
