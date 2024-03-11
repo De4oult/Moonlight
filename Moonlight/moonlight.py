@@ -1,7 +1,6 @@
 from filelock import FileLock
 from uuid     import uuid4 
 
-from Moonlight.messages import Message
 from Moonlight.logger   import Logger
 
 import json
@@ -13,6 +12,16 @@ EMPTY: dict[str, list] = {
 
 def init_database(filename: str):    
     if os.path.exists(filename): return
+
+    full_dir = ''
+
+    for directory in filename.split('/')[0:-1]:
+        full_dir += directory
+
+        if os.path.exists(full_dir): continue
+        
+        os.mkdir(full_dir)
+
 
     with open(filename, 'w', encoding = 'utf-8') as database_file:
         json.dump(EMPTY, database_file, indent = 4)
@@ -33,13 +42,16 @@ class Moonlight:
     """
     def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
         self.filename = str(filename)
-        self.filename += '' if filename.endswith('.json') else '.json'
+        self.filename += '' if self.filename.endswith('.json') else '.json'
         
+        self.logger   = Logger(self.filename, show_messages)
+
+        self.filename = 'database/' + self.filename
+
         init_database(self.filename)
 
         self.__primary_key = str(primary_key)
         self.lock          = FileLock(f'{self.filename}.lock')
-        self.logger        = Logger(self.filename, show_messages)
 
     def __get_id(self) -> int:           return int(str(uuid4().int)[:14])
     def __cast_id(self, id: int) -> int: return int(id)
@@ -207,7 +219,7 @@ class Moonlight:
         if os.path.isfile(self.filename):
             os.remove(self.filename)
 
-        await self.logger.write(f'Database drop [from `{self.filename}`: drop()', 'success')
+        await self.logger.write(f'Database drop [from `{self.filename}`: drop()]', 'success')
 
 
     # Tools
@@ -221,7 +233,16 @@ class Moonlight:
 
         @returns {contains: bool}.
         """
-        return True if (await self.get({ key : value})) != [] else False
+        query = { key : value}
+        
+        with self.lock:
+            with open(self.filename, 'r', encoding = 'utf-8') as database_file:
+                database_data = self.__get_load_func()(database_file)
+                
+                for data in database_data.get('data'):
+                    if all((x in data) and (data[x] == query[x]) for x in query): return True
+
+                return False
     
     async def length(self) -> int:
         """
@@ -231,7 +252,7 @@ class Moonlight:
         """
         return len(await self.all())
 
-    async def count(self, key: str, value, any) -> int:
+    async def count(self, key: str, value: any) -> int:
         """
         Returns count of objects in database where `key` is `value`
 
@@ -241,4 +262,16 @@ class Moonlight:
 
         @returns {count: int}.
         """
-        return len(await self.get({ key : value}))
+        query = { key : value}
+        
+        with self.lock:
+            with open(self.filename, 'r', encoding = 'utf-8') as database_file:
+                database_data = self.__get_load_func()(database_file)
+
+                count: int = 0
+                
+                for data in database_data.get('data'):
+                    if all((x in data) and (data[x] == query[x]) for x in query):
+                        count += 1
+
+                return count

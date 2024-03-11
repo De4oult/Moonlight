@@ -1,4 +1,3 @@
-from .messages  import Message
 from .moonlight import Moonlight
 from .logger    import Logger
 from .cli       import *

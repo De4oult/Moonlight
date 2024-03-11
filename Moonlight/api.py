@@ -29,7 +29,14 @@ def create_application():
                 'description' : 'Name of database required!'
             })
 
-        # check if database already exists
+        if await databases.contains('filename', filename):
+            return json({
+                'status' : 200,
+                'data'   : {
+                    'id' : (await databases.get({ 'filename' : filename }))[0].get('id'),
+                    'msg': f'Database with name `{filename}` already exists'
+                }
+            })
 
         id = await databases.push({
             'filename'      : filename,
