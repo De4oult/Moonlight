@@ -10,7 +10,6 @@ from Moonlight.api    import create_application
 import secrets
 import click
 
-
 @click.command()
 def serve() -> None:    
     loader: AppLoader = AppLoader(factory = partial(create_application))
@@ -69,10 +68,10 @@ def create_user(username: str, password: str) -> None:
     }
 
     new_user['permissions'] = prompt({
-            'type'    : 'list',
-            'message' : 'Select permissions level:',
-            'choices' : ['Viewer', 'Editor', 'Administrator'],
-            'name'    : 'permissions'
+        'type'    : 'list',
+        'message' : 'Select permissions level:',
+        'choices' : ['Viewer', 'Editor', 'Administrator'],
+        'name'    : 'permissions'
     }).get('permissions')
         
     config.set('users', [*users, new_user])

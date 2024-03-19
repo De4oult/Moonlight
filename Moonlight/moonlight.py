@@ -1,7 +1,7 @@
 from filelock import FileLock
-from uuid     import uuid4 
+from uuid     import uuid4
 
-from Moonlight.logger   import Logger
+from Moonlight.logger import Logger
 
 import json
 import os
