@@ -2,8 +2,10 @@ from sanic.worker.loader import AppLoader
 from sanic               import Sanic
 from functools           import partial
 
-from Moonlight.api import create_application
+from Moonlight.config import *
+from Moonlight.api    import create_application
 
+import secrets
 import click
 
 @click.command()
@@ -25,11 +27,21 @@ def run(host, port):
         app_loader = loader
     )
 
+@click.command()
+@click.option('--generate-key', default = True, help = 'generates key for requests on database')
+def auth(generate_key):
+    config = load_config()
+    config['api_key'] = secrets.token_hex(32)
+
+    save_config(config)
+    click.echo('API token updated: %s' % config.get('api_key'))
+
 @click.group()
 def cli():
     pass
 
 cli.add_command(run)
+cli.add_command(auth)
 
 if __name__ == '__main__':
     cli()
