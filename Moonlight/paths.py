@@ -9,5 +9,5 @@ exec_path: str = exec_directory()
 conf_path: str = join(head_directory(), 'config.json')
 
 databases     : str = join(head_directory(), 'databases.json')
-databases_path: str = join(head_directory(), 'databases')
-logging_path  : str = join(head_directory(), 'logging')
+databases_path: str = join(exec_directory(), 'databases')
+logging_path  : str = join(exec_directory(), 'logging')

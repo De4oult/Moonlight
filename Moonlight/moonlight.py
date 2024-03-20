@@ -2,7 +2,9 @@ from filelock import FileLock
 from uuid     import uuid4
 
 from Moonlight.logger import Logger
+from Moonlight.paths  import databases_path
 
+import aiofiles
 import json
 import os
 
@@ -10,7 +12,7 @@ EMPTY: dict[str, list] = {
     'data' : []
 }
 
-def init_database(filename: str):    
+def init_database(filename: str):
     if os.path.exists(filename): return
 
     full_dir = ''
@@ -21,7 +23,6 @@ def init_database(filename: str):
         if os.path.exists(full_dir): continue
         
         os.mkdir(full_dir)
-
 
     with open(filename, 'w', encoding = 'utf-8') as database_file:
         json.dump(EMPTY, database_file, indent = 4)

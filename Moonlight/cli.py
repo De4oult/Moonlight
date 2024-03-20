@@ -7,7 +7,6 @@ from Moonlight.config import config
 from Moonlight.tools  import password_hash
 from Moonlight.api    import create_application
 
-import secrets
 import click
 
 @click.command()
@@ -30,9 +29,8 @@ def serve() -> None:
 @click.command()
 @click.option('-h', '--host',           default = '127.0.0.1', type = str,  help = 'database manager IP address')
 @click.option('-p', '--port',           default = 3000,        type = int,  help = 'database manager port')
-@click.option('--auth/--no-auth',       default = False,       type = bool, help = 'need auth, if true returns you api key')
 @click.option('--logging/--no-logging', default = True,        type = bool, help = 'on logging')
-def configure(host: str, port: int, auth: bool, logging: bool) -> None:
+def configure(host: str, port: int, logging: bool) -> None:
     config.set('host',      host)
     config.set('port',      port)
     config.set('need_logs', logging)
@@ -48,11 +46,9 @@ def configure(host: str, port: int, auth: bool, logging: bool) -> None:
 
     print('APP configured!') #!!!
 
-    if(auth): print('New API token: %s' % config.get('api_key')) #!!!
-
 @click.command()
 @click.option('-u', '--username', required = True, type = str, help = 'username')
-@click.option('-p', '--password', type = str, help = 'password')
+@click.option('-p', '--password', required = True, type = str, help = 'password')
 def create_user(username: str, password: str) -> None:
     users = config.get('users')
 
@@ -63,8 +59,7 @@ def create_user(username: str, password: str) -> None:
         
     new_user: dict[str, any] = {
         'username' : username,
-        'password' : password_hash(password),
-        'api_key'  : secrets.token_hex(32)
+        'password' : password_hash(password)
     }
 
     new_user['permissions'] = prompt({
@@ -75,7 +70,7 @@ def create_user(username: str, password: str) -> None:
     }).get('permissions')
         
     config.set('users', [*users, new_user])
-    print('User successfully added \nToken: %s' % new_user.get('api_key'))
+    print('User successfully added')
 
 @click.command()
 def delete_user() -> None:

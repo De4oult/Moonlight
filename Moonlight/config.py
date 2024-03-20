@@ -13,6 +13,7 @@ def init_config(path) -> None:
             'need_logs' : False,
             'users'     : [],
             'loggers'   : ['warning', 'error'],
+            'api_keys'  : []
         }, config_file, indent = 4)
 
 class Config:
@@ -30,6 +31,13 @@ class Config:
         self.config[key] = value
 
         with open(self.path, 'w', encoding = 'utf-8') as config_file: json.dump(self.config, config_file, indent = 4)
+
+    def push(self, key: str, value: str) -> None:
+        array: list[any] = self.config.get(key)
+
+        array.append(value)
+
+        self.set(key, array)
 
 
 config = Config(conf_path)
