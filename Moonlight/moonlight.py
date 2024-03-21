@@ -2,9 +2,9 @@ from filelock import FileLock
 from uuid     import uuid4
 
 from Moonlight.logger import Logger
-from Moonlight.paths  import databases_path
+from Moonlight.paths  import make_database_path, make_logging_path
+from Moonlight.tools  import strip_json
 
-import aiofiles
 import json
 import os
 
@@ -12,19 +12,12 @@ EMPTY: dict[str, list] = {
     'data' : []
 }
 
-def init_database(filename: str):
-    if os.path.exists(filename): return
+def init_database(path: str):
+    if os.path.exists(path): return
 
-    full_dir = ''
+    os.makedirs(path.split()[0:-2])
 
-    for directory in filename.split('/')[0:-1]:
-        full_dir += directory
-
-        if os.path.exists(full_dir): continue
-        
-        os.mkdir(full_dir)
-
-    with open(filename, 'w', encoding = 'utf-8') as database_file:
+    with open(path, 'w', encoding = 'utf-8') as database_file:
         json.dump(EMPTY, database_file, indent = 4)
 
 
@@ -33,7 +26,7 @@ class Moonlight:
         class Moonlight
         
         arguments
-            - filename      (str)        <- path to database .json-file
+            - filename      (str)        <- relative path to database .json-file
             - primary_key   (str)        <- primary key name (default: 'id') 
             - show_messages (tuple[str]) <- tuple of messages that will be output during operation (default: ('warning', 'error'))
                 * 'success'
@@ -42,17 +35,14 @@ class Moonlight:
                 * 'error'
     """
     def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
-        self.filename = str(filename)
-        self.filename += '' if self.filename.endswith('.json') else '.json'
-        
-        self.logger   = Logger(self.filename, show_messages)
-
-        self.filename = 'database/' + self.filename
+        self.logs_path = make_logging_path(strip_json(filename))
+        self.filename  = make_database_path(filename)
 
         init_database(self.filename)
 
         self.__primary_key = str(primary_key)
         self.lock          = FileLock(f'{self.filename}.lock')
+        self.logger        = Logger(self.logs_path, show_messages)
 
     def __get_id(self) -> int:           return int(str(uuid4().int)[:14])
     def __cast_id(self, id: int) -> int: return int(id)

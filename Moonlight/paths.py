@@ -12,5 +12,5 @@ databases     : str = join(head_directory(), 'databases.json')
 databases_path: str = join(exec_directory(), 'database')
 logging_path  : str = join(exec_directory(), 'logs')
 
-def make_database_path(filename: str) -> str: return join(databases_path, filename + '' if filename.endswith('.json') else '.json')
-def make_logging_path(filename: str)  -> str: return join(logging_path,   filename + '' if filename.endswith('.log')  else '.log')
+def make_database_path(filename: str) -> str: return join(databases_path, filename + '' if filename.endswith('.json') else filename + '.json')
+def make_logging_path(filename: str)  -> str: return join(logging_path,   filename + '' if filename.endswith('.log')  else filename + '.log')

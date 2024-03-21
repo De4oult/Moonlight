@@ -13,7 +13,8 @@ def init_config(path) -> None:
             'need_logs' : False,
             'users'     : [],
             'loggers'   : ['warning', 'error'],
-            'api_keys'  : []
+            'api_keys'  : [],
+            'databases' : []
         }, config_file, indent = 4)
 
 class Config:
