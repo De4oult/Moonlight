@@ -1,12 +1,11 @@
 from filelock import FileLock
-from datetime import datetime
 from colorama import Fore, Style
 from tools    import get_now_datetime
 
 import os
 
 def init_log(path: str):
-    if not os.path.exists(path): os.makedirs('\\'.join(path.split('\\')[0:-2]), exist_ok = True)
+    if not os.path.exists(path): os.makedirs('\\'.join(path.split('\\')[0:-1]), exist_ok = True)
 
     with open(path, 'a', encoding = 'utf-8') as logs_file:
         logs_file.write('[%s] Database connected\n' % get_now_datetime())

@@ -9,17 +9,17 @@ from Moonlight.config     import config
 from Moonlight.tools      import password_hash, generate_token
 from Moonlight.decorators import permission
 
-databases: Moonlight = Moonlight(
-    'databases.json', 
-    show_messages = (
-        'info',
-        'success',
-        'warning',
-        'error'
-    )
-)
+# databases: Moonlight = Moonlight(
+#     'databases.json', 
+#     show_messages = (
+#         'info',
+#         'success',
+#         'warning',
+#         'error'
+#     )
+# )
 
-def create_application():
+def create_application() -> Sanic:
     app: Sanic = Sanic('Moonlight')
 
     CORS(app)
@@ -62,11 +62,6 @@ def create_application():
         if not token: return json({ 'error' : 'Invalid or expired token' }, status = 401)
 
         request.ctx.user = next(user for user in config.get('users') if user.get('username') == token.get('author'))
-
-    @app.route('/protected', methods=['GET'])
-    @permission('Viewer')
-    async def protected(request):
-        return json({'message' : 'test'}, status=200)
 
     return app
 

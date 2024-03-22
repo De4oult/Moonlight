@@ -67,7 +67,7 @@ def create_user(username: str, password: str) -> None:
         'message' : 'Select permissions level:',
         'choices' : ['Viewer', 'Editor', 'Administrator'],
         'name'    : 'permissions'
-    }).get('permissions')
+    }).get('permissions').lower()
         
     config.set('users', [*users, new_user])
     print('User successfully added')

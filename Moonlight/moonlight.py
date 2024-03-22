@@ -13,9 +13,8 @@ EMPTY: dict[str, list] = {
 }
 
 def init_database(path: str):
-    if os.path.exists(path): return
+    if not os.path.exists(path): os.makedirs('\\'.join(path.split('\\')[0:-1]), exist_ok = True)
 
-    os.makedirs(path.split()[0:-2])
 
     with open(path, 'w', encoding = 'utf-8') as database_file:
         json.dump(EMPTY, database_file, indent = 4)
