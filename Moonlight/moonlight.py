@@ -3,7 +3,7 @@ from uuid     import uuid4
 
 from Moonlight.logger import Logger
 from Moonlight.paths  import make_database_path, make_logging_path
-from Moonlight.tools  import strip_json
+from Moonlight.tools  import strip_ext
 
 import json
 import os
@@ -34,7 +34,7 @@ class Moonlight:
                 * 'error'
     """
     def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
-        self.logs_path = make_logging_path(strip_json(filename))
+        self.logs_path = make_logging_path(strip_ext(filename, '.json'))
         self.filename  = make_database_path(filename)
 
         init_database(self.filename)
@@ -173,34 +173,22 @@ class Moonlight:
         @returns {object: dict[str, any]}.
         """
         with self.lock:
-            with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
+            with open(self.filename, 'r+', encoding='utf-8') as database_file:
                 database_data = self.__get_load_func()(database_file)
-                result: list  = []
-                founded: bool = False
+                data_list = database_data.get('data')
+                deleted_data = next((item for item in data_list if item.get(self.__primary_key) == self.__cast_id(id)), None)
 
-                deleted_data: dict[str, any] = None
-
-                for data in database_data.get('data'):
-                    if data.get(self.__primary_key) == self.__cast_id(id): 
-                        deleted_data = data
-                        founded = True
-
-                    else: result.append(data)
-
-                if not founded:
+                if not deleted_data:
                     await self.logger.write(f'Nothing to delete [from `{self.filename}`: delete({id})] \n\n>>> Element with {self.__primary_key}=`{id}` was not found', 'error')
-                    
-                    return
+                    return None
                 
-                database_data['data'] = result
+                database_data['data'] = [item for item in data_list if item.get(self.__primary_key) != self.__cast_id(id)]
                 database_file.seek(0)
                 database_file.truncate()
-
                 self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
-
-                await self.logger.write(f'Deleted [from `{self.filename}`: delete({id})', 'success')
-
+                await self.logger.write(f'Deleted [from `{self.filename}`: delete({id})]', 'success')
                 return deleted_data
+
             
     async def drop(self) -> None:
         """

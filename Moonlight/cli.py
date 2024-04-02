@@ -3,9 +3,10 @@ from sanic               import Sanic
 from functools           import partial
 from InquirerPy          import prompt
 
-from Moonlight.config import config
-from Moonlight.tools  import password_hash
-from Moonlight.api    import create_application
+from Moonlight.config   import config, app_data
+from Moonlight.tools    import password_hash
+from Moonlight.api      import create_application
+from Moonlight.messages import messages
 
 import click
 
@@ -38,7 +39,7 @@ def configure(host: str, port: int, logging: bool) -> None:
     if(logging):
         config.set('loggers', prompt({
             'type'    : 'checkbox',
-            'message' : 'Select loggers:',
+            'message' : messages.get_message('prompt.select', 'loggers'),
             'choices' : ['Info', 'Success', 'Warning', 'Error'],
             'name'    : 'loggers'
         }).get('loggers'))
@@ -47,16 +48,26 @@ def configure(host: str, port: int, logging: bool) -> None:
     print('APP configured!') #!!!
 
 @click.command()
-@click.option('-u', '--username', required = True, type = str, help = 'username')
-@click.option('-p', '--password', required = True, type = str, help = 'password')
-def create_user(username: str, password: str) -> None:
+def create_user() -> None:
     users = config.get('users')
+
+    username = prompt({
+        'type'    : 'input',
+        'message' :  messages.get_message('prompt.enter', 'username'),
+        'name'    : 'username'
+    }).get('username')
 
     for user in users:
         if user.get('username') == username:
-            print('!!! User already exist. Delete id before create new') #!!!
+            print('!!! User already exist. Delete it before create new') #!!!
             return
         
+    password = prompt({
+        'type'    : 'password',
+        'message' : 'Password: ',
+        'name'    : 'password'
+    }).get('password')
+
     new_user: dict[str, any] = {
         'username' : username,
         'password' : password_hash(password)
@@ -100,6 +111,17 @@ def delete_user() -> None:
 
     config.set('users', [user for user in users if user.get('username') != username])
 
+@click.command()
+def locale() -> None:
+    locale = prompt({
+        'type'    : 'list',
+        'message' : 'Select locale',
+        'choices' : app_data.get('locales'),
+        'name'    : 'locale'
+    }).get('locale')
+
+    app_data.set('current_locale', locale)
+
 @click.group()
 def cli() -> None: ...
 
@@ -107,6 +129,7 @@ cli.add_command(serve)
 cli.add_command(configure)
 cli.add_command(create_user)
 cli.add_command(delete_user)
+cli.add_command(locale)
 
 if __name__ == '__main__':
     cli()

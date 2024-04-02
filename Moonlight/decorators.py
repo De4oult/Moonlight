@@ -18,4 +18,5 @@ def permission(minimal_permission):
             return await func(request, *args, **kwargs)
         
         return decorated_function
+    
     return decorator
