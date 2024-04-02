@@ -6,7 +6,7 @@ from InquirerPy          import prompt
 from Moonlight.config   import config, app_data
 from Moonlight.tools    import password_hash
 from Moonlight.api      import create_application
-from Moonlight.messages import messages
+from Moonlight.messages import t
 
 import click
 
@@ -39,13 +39,13 @@ def configure(host: str, port: int, logging: bool) -> None:
     if(logging):
         config.set('loggers', prompt({
             'type'    : 'checkbox',
-            'message' : messages.get_message('prompt.select', 'loggers'),
+            'message' : t('prompt.select', 'loggers'),
             'choices' : ['Info', 'Success', 'Warning', 'Error'],
             'name'    : 'loggers'
         }).get('loggers'))
 
 
-    print('APP configured!') #!!!
+    print(t('success.application', 'configured'))
 
 @click.command()
 def create_user() -> None:
@@ -53,18 +53,18 @@ def create_user() -> None:
 
     username = prompt({
         'type'    : 'input',
-        'message' :  messages.get_message('prompt.enter', 'username'),
+        'message' :  t('prompt.enter', 'username'),
         'name'    : 'username'
     }).get('username')
 
     for user in users:
         if user.get('username') == username:
-            print('!!! User already exist. Delete it before create new') #!!!
+            print(t('errors.user', 'already_exist', username = username))
             return
         
     password = prompt({
         'type'    : 'password',
-        'message' : 'Password: ',
+        'message' : t('prompt.enter', 'password'),
         'name'    : 'password'
     }).get('password')
 
@@ -75,38 +75,38 @@ def create_user() -> None:
 
     new_user['permissions'] = prompt({
         'type'    : 'list',
-        'message' : 'Select permissions level:',
-        'choices' : ['Viewer', 'Editor', 'Administrator'],
+        'message' : t('prompt.select', 'permissions', username = username),
+        'choices' : [t('permissions', 'viewer'), t('permissions', 'editor'), t('permissions', 'admin')],
         'name'    : 'permissions'
     }).get('permissions').lower()
         
     config.set('users', [*users, new_user])
-    print('User successfully added')
+    print(t('success.user', 'created'))
 
 @click.command()
 def delete_user() -> None:
     users = config.get('users')
 
     if len(users) == 0:
-        print('No users!')
+        print(t('success.user', 'no_one'))
         return
 
     username = prompt({
         'type'    : 'list',
-        'message' : 'Select user to delete:',
+        'message' : t('prompt.select', 'user'),
         'choices' : [user.get('username') for user in users],
         'name'    : 'username'
     }).get('username')
 
     proceed = prompt({
         'type'    : 'confirm',
-        'message' : f'Delete user {username}',
+        'message' : t('prompt.confirm', 'delete_user', username = username),
         'name'    : 'proceed',
         'default' : False
     }).get('proceed')
 
     if not proceed: 
-        print('Cancel')
+        print(t('prompt', 'cancel'))
         return
 
     config.set('users', [user for user in users if user.get('username') != username])
@@ -115,7 +115,7 @@ def delete_user() -> None:
 def locale() -> None:
     locale = prompt({
         'type'    : 'list',
-        'message' : 'Select locale',
+        'message' : t('prompt.select', 'locale'),
         'choices' : app_data.get('locales'),
         'name'    : 'locale'
     }).get('locale')

@@ -6,4 +6,4 @@ from .paths      import *
 from .cli        import *
 from .api        import create_application
 from .decorators import *
-from .messages   import messages
+from .messages   import t

@@ -1,7 +1,7 @@
 from os.path import dirname, abspath, join
 from os      import getcwd
 
-from Moonlight.tools import strip_ext
+from Moonlight.tools import strip_ext, add_ext
 
 def head_directory() -> str: return dirname(dirname(abspath(__file__)))
 def exec_directory() -> str: return getcwd()
@@ -15,8 +15,8 @@ databases     : str = join(head_directory(), 'databases.json')
 databases_path: str = join(exec_directory(), 'database')
 logging_path  : str = join(exec_directory(), 'logs')
 
-locales_path: str = join(head_directory(), 'locales/')
+locales_path: str = join(head_directory(), 'Moonlight', 'locales')
 
 def make_database_path(filename: str) -> str: return join(databases_path, strip_ext(filename, '.json'))
 def make_logging_path(filename: str)  -> str: return join(logging_path,   strip_ext(filename, '.log'))
-def make_locale_path(locale: str)     -> str: return join(locales_path,   strip_ext(locale,   '.json'))
+def make_locale_path(locale: str)     -> str: return join(locales_path,   add_ext(locale,   '.json'))

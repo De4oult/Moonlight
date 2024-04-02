@@ -7,8 +7,8 @@ class Messages:
     def __init__(self) -> None:
         self.locale_path = make_locale_path(app_data.get('current_locale'))
 
-        with open(self.locale_path, 'r', encoding='utf-8') as file:
-            self.messages = json.load(file)
+        with open(self.locale_path, 'r', encoding = 'utf-8') as locales_file:
+            self.messages = json.load(locales_file)
 
     def get_message(self, category: str, message_id: str, **kwargs) -> str:
         def get_nested_message(parts, messages):
@@ -21,4 +21,4 @@ class Messages:
 
         return message.format(**kwargs)
     
-messages =  Messages()
+t =  Messages().get_message
