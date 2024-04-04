@@ -17,6 +17,6 @@ logging_path  : str = join(exec_directory(), 'logs')
 
 locales_path: str = join(head_directory(), 'Moonlight', 'locales')
 
-def make_database_path(filename: str) -> str: return join(databases_path, strip_ext(filename, '.json'))
-def make_logging_path(filename: str)  -> str: return join(logging_path,   strip_ext(filename, '.log'))
+def make_database_path(filename: str) -> str: return join(databases_path, add_ext(filename, '.json'))
+def make_logging_path(filename: str)  -> str: return join(logging_path,   add_ext(filename, '.log'))
 def make_locale_path(locale: str)     -> str: return join(locales_path,   add_ext(locale,   '.json'))

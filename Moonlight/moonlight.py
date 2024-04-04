@@ -13,8 +13,7 @@ EMPTY: dict[str, list] = {
 }
 
 def init_database(path: str):
-    if not os.path.exists(path): os.makedirs('\\'.join(path.split('\\')[0:-1]), exist_ok = True)
-
+    if not os.path.exists(path): os.makedirs(os.path.dirname(path), exist_ok = True)
 
     with open(path, 'w', encoding = 'utf-8') as database_file:
         json.dump(EMPTY, database_file, indent = 4)
@@ -36,7 +35,7 @@ class Moonlight:
     def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
         self.logs_path = make_logging_path(strip_ext(filename, '.json'))
         self.filename  = make_database_path(filename)
-
+        
         init_database(self.filename)
 
         self.__primary_key = str(primary_key)

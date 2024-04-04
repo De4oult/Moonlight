@@ -3,10 +3,12 @@ from sanic               import Sanic
 from functools           import partial
 from InquirerPy          import prompt
 
-from Moonlight.config   import config, app_data
-from Moonlight.tools    import password_hash
-from Moonlight.api      import create_application
-from Moonlight.messages import t
+from Moonlight.config     import config, app_data
+from Moonlight.tools      import password_hash
+from Moonlight.api        import create_application
+from Moonlight.messages   import t
+from Moonlight.decorators import auth_cli
+from Moonlight.moonlight  import Moonlight
 
 import click
 
@@ -123,36 +125,11 @@ def delete_user() -> None:
     config.set('users', [user for user in users if user.get('username') != username])
 
 @click.command()
+# @auth_cli()
 def create_database() -> None:
-    users = config.get('users')
-
-    if len(users) == 0:
-        print(t('errors.user', 'need_create_user'))
-        return
-    
-    username = prompt({
-        'type'    : 'input',
-        'message' :  t('prompt.enter', 'username'),
-        'name'    : 'username'
-    }).get('username')
-    
-    user = next((user for user in users if user.get('username') == username), None)
-
-    if not user:
-        print(t('errors.user', 'cant_find', username = username))
-        return
-        
-    password = prompt({
-        'type'    : 'password',
-        'message' : t('prompt.enter', 'password'),
-        'name'    : 'password'
-    }).get('password')
-
-    if password_hash(password) != user.get('password'):
-        print(t('errors.user', 'invalid_password'))
-        return
-
     print('Woho!')
+
+    database = Moonlight('torvus')
 
 @click.group()
 def cli() -> None: ...
