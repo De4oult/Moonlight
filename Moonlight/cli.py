@@ -48,6 +48,17 @@ def configure(host: str, port: int, logging: bool) -> None:
     print(t('success.application', 'configured'))
 
 @click.command()
+def locale() -> None:
+    locale = prompt({
+        'type'    : 'list',
+        'message' : t('prompt.select', 'locale'),
+        'choices' : app_data.get('locales'),
+        'name'    : 'locale'
+    }).get('locale')
+
+    app_data.set('current_locale', locale)
+
+@click.command()
 def create_user() -> None:
     users = config.get('users')
 
@@ -88,7 +99,7 @@ def delete_user() -> None:
     users = config.get('users')
 
     if len(users) == 0:
-        print(t('success.user', 'no_one'))
+        print(t('errors.user', 'no_one'))
         return
 
     username = prompt({
@@ -112,24 +123,46 @@ def delete_user() -> None:
     config.set('users', [user for user in users if user.get('username') != username])
 
 @click.command()
-def locale() -> None:
-    locale = prompt({
-        'type'    : 'list',
-        'message' : t('prompt.select', 'locale'),
-        'choices' : app_data.get('locales'),
-        'name'    : 'locale'
-    }).get('locale')
+def create_database() -> None:
+    users = config.get('users')
 
-    app_data.set('current_locale', locale)
+    if len(users) == 0:
+        print(t('errors.user', 'need_create_user'))
+        return
+    
+    username = prompt({
+        'type'    : 'input',
+        'message' :  t('prompt.enter', 'username'),
+        'name'    : 'username'
+    }).get('username')
+    
+    user = next((user for user in users if user.get('username') == username), None)
+
+    if not user:
+        print(t('errors.user', 'cant_find', username = username))
+        return
+        
+    password = prompt({
+        'type'    : 'password',
+        'message' : t('prompt.enter', 'password'),
+        'name'    : 'password'
+    }).get('password')
+
+    if password_hash(password) != user.get('password'):
+        print(t('errors.user', 'invalid_password'))
+        return
+
+    print('Woho!')
 
 @click.group()
 def cli() -> None: ...
 
 cli.add_command(serve)
 cli.add_command(configure)
+cli.add_command(locale)
 cli.add_command(create_user)
 cli.add_command(delete_user)
-cli.add_command(locale)
+cli.add_command(create_database)
 
 if __name__ == '__main__':
     cli()
