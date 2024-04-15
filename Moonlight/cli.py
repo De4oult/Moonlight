@@ -235,7 +235,7 @@ def databases() -> None:
 
 @click.command()
 @auth_cli('viewer')
-def show_table(username: str) -> None:
+def database(username: str) -> None:
     databases: list[dict] = config.get('databases')
 
     if len(databases) == 0:
@@ -282,7 +282,7 @@ cli.add_command(delete_user)
 cli.add_command(create_database)
 cli.add_command(delete_database)
 cli.add_command(databases)
-cli.add_command(show_table)
+cli.add_command(database)
 
 if __name__ == '__main__':
     cli()
