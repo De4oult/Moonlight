@@ -159,6 +159,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-*.json
 key
-*.txt
+deploy
+test
+
+database/
+logs/
+test.py

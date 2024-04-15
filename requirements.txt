@@ -1,0 +1,9 @@
+colorama
+filelock
+sanic
+sanic_cors
+click
+pick
+InquirerPy
+loguru
+rich

@@ -17,19 +17,22 @@ class Config:
 
         with open(path, 'r', encoding = 'utf-8') as config_file: self.config = json.load(config_file)
 
-    def get(self, key: str) -> any: return self.config.get(key)
+    def get(self, tab: str) -> any: return self.config.get(tab)
 
-    def set(self, key: str, value: str) -> None:
-        self.config[key] = value
+    def set(self, tab: str, value: str) -> None:
+        self.config[tab] = value
 
         with open(self.path, 'w', encoding = 'utf-8') as config_file: json.dump(self.config, config_file, indent = 4)
 
-    def push(self, key: str, value: str) -> None:
-        array: list[any] = self.config.get(key)
+    def push(self, tab: str, value: str) -> None:
+        array: list[any] = self.config.get(tab)
 
         array.append(value)
 
-        self.set(key, array)
+        self.set(tab, array)
+    
+    def delete(self, tab: str, key: str, value: str) -> None:
+        self.set(tab, [element for element in self.config.get(tab) if element.get(key) != value])
 
 app_data = Config(data_path)
 config   = Config(conf_path, app_data.get('base_config'))

@@ -1,0 +1,80 @@
+{
+    "host": "127.0.0.1",
+    "port": 3000,
+    "need_logs": true,
+    "users": [
+        {
+            "username": "de4oult",
+            "password": "90b7b3f6d804f214e2d7f1dde46a5af44ba45e257faff69b5aebba3780b0a9d1",
+            "permissions": "admin"
+        }
+    ],
+    "loggers": [
+        "Success",
+        "Warning",
+        "Error"
+    ],
+    "api_keys": [
+        {
+            "author": "de4oult",
+            "token": "fe1de5d83c161cd808a7415f895ce1150cf991bc9747bad788096c6ef869761e",
+            "expires": "2024-03-22T14:25:17.447614",
+            "created": "2024-03-22T11:25:17.447614",
+            "permissions": "Administrator"
+        }
+    ],
+    "databases": [
+        {
+            "id": 31227232467081,
+            "name": "Kawai",
+            "created_at": "15-04-2024 14:29:36",
+            "author": "de4oult"
+        },
+        {
+            "id": 81427735289607,
+            "name": "Kawai",
+            "created_at": "15-04-2024 14:31:16",
+            "author": "de4oult"
+        },
+        {
+            "id": 31828050042059,
+            "name": "Kawai",
+            "created_at": "15-04-2024 14:31:58",
+            "author": "de4oult"
+        },
+        {
+            "id": 31914717030658,
+            "name": "Kawai",
+            "created_at": "15-04-2024 14:33:43",
+            "author": "de4oult"
+        },
+        {
+            "id": 12375381990126,
+            "name": "Kawai",
+            "created_at": "15-04-2024 14:34:01",
+            "author": "de4oult"
+        },
+        {
+            "id": 10043297872805,
+            "name": "kawai",
+            "created_at": "15-04-2024 14:34:21",
+            "author": "de4oult"
+        },
+        {
+            "id": 23714446573452,
+            "name": "kawai",
+            "path": "E:\\\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b\\\u041f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435\\Moonlight\\database\\kawai.json",
+            "logs_path": "E:\\\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b\\\u041f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435\\Moonlight\\logs\\kawai.log",
+            "created_at": "15-04-2024 14:34:55",
+            "author": "de4oult"
+        },
+        {
+            "id": 15522049611079,
+            "name": "kayrfda",
+            "path": "E:\\\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b\\\u041f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435\\Moonlight\\database\\kayrfda.json",
+            "logs_path": "E:\\\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u044b\\\u041f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435\\Moonlight\\logs\\kayrfda.log",
+            "created_at": "15-04-2024 14:35:44",
+            "author": "de4oult"
+        }
+    ]
+}

@@ -1,7 +1,7 @@
 from os.path import dirname, abspath, join
 from os      import getcwd
 
-from Moonlight.tools import strip_ext, add_ext
+from Moonlight.tools import add_ext
 
 def head_directory() -> str: return dirname(dirname(abspath(__file__)))
 def exec_directory() -> str: return getcwd()

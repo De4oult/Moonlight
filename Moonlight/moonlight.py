@@ -3,7 +3,7 @@ from uuid     import uuid4
 
 from Moonlight.logger import Logger
 from Moonlight.paths  import make_database_path, make_logging_path
-from Moonlight.tools  import strip_ext
+from Moonlight.tools  import strip_ext, check_path
 
 import json
 import os
@@ -12,12 +12,9 @@ EMPTY: dict[str, list] = {
     'data' : []
 }
 
-def init_database(path: str):
-    if not os.path.exists(path): os.makedirs(os.path.dirname(path), exist_ok = True)
-
-    with open(path, 'w', encoding = 'utf-8') as database_file:
+def init_database(path: str): 
+    with open(check_path(path), 'w', encoding = 'utf-8') as database_file: 
         json.dump(EMPTY, database_file, indent = 4)
-
 
 class Moonlight:
     """

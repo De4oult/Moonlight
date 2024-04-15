@@ -58,7 +58,7 @@ def auth_cli():
                 print(t('errors.user', 'invalid_password'))
                 return
             
-            return func(*args, **kwargs)
+            return func(username, *args, **kwargs)
         
         return decorated_function
     

@@ -21,4 +21,4 @@ class Messages:
 
         return message.format(**kwargs)
     
-t =  Messages().get_message
+t = Messages().get_message

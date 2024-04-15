@@ -7,8 +7,9 @@
             "locale"      : "Select locale"
         },
         "enter" : {
-            "username" : "Enter username: ",
-            "password" : "Enter password: "
+            "username"      : "Enter username: ",
+            "password"      : "Enter password: ",
+            "database_name" : "Enter database name: "
         },
         "confirm" : {
             "delete_user" : "Do you really want to delete user `{username}`"
@@ -21,17 +22,25 @@
             "configured" : "Application is configured"
         },
         "user" : {
-            "created" : "User successfully created"
+            "created" : "User successfully created",
+            "deleted" : "User successfully deleted"
+        },
+        "database" : {
+            "created" : "Database successfully created",
+            "deleted" : "Database successfully deleted"
         }
     },
     "warning"  : {},
     "errors"   : {
         "user" : {
-            "no_one" : "There are no users",
-            "already_exist" : "User with name `{username}` already exists",
+            "no_one"           : "There are no users",
+            "already_exist"    : "User with name `{username}` already exists",
             "need_create_user" : "First you need to create user",
-            "cant_find": "Could not find user named `{username}`",
-            "invalid_password": "Incorrect password"
+            "cant_find"        : "Could not find user named `{username}`",
+            "invalid_password" : "Incorrect password"
+        },
+        "database" : {
+            "already_exist" : "Database with name `{database_name}` already exists"
         }
     },
     "permissions" : {

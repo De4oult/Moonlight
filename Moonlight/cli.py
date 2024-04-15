@@ -2,15 +2,18 @@ from sanic.worker.loader import AppLoader
 from sanic               import Sanic
 from functools           import partial
 from InquirerPy          import prompt
+from rich.console        import Console
 
 from Moonlight.config     import config, app_data
-from Moonlight.tools      import password_hash
+from Moonlight.tools      import password_hash, generate_uuid, get_now_datetime
 from Moonlight.api        import create_application
 from Moonlight.messages   import t
 from Moonlight.decorators import auth_cli
 from Moonlight.moonlight  import Moonlight
 
 import click
+
+console = Console()
 
 @click.command()
 def serve() -> None:    
@@ -47,7 +50,7 @@ def configure(host: str, port: int, logging: bool) -> None:
         }).get('loggers'))
 
 
-    print(t('success.application', 'configured'))
+    console.print(t('success.application', 'configured'))
 
 @click.command()
 def locale() -> None:
@@ -70,11 +73,10 @@ def create_user() -> None:
         'name'    : 'username'
     }).get('username')
 
-    for user in users:
-        if user.get('username') == username:
-            print(t('errors.user', 'already_exist', username = username))
-            return
-        
+    if any(user.get('username') == username for user in users):
+        console.print(t('errors.user', 'already_exist', username=username))
+        return
+
     password = prompt({
         'type'    : 'password',
         'message' : t('prompt.enter', 'password'),
@@ -93,15 +95,15 @@ def create_user() -> None:
         'name'    : 'permissions'
     }).get('permissions').lower()
         
-    config.set('users', [*users, new_user])
-    print(t('success.user', 'created'))
+    config.push('users', new_user)
+    console.print(t('success.user', 'created'))
 
 @click.command()
 def delete_user() -> None:
     users = config.get('users')
 
     if len(users) == 0:
-        print(t('errors.user', 'no_one'))
+        console.print(t('errors.user', 'no_one'))
         return
 
     username = prompt({
@@ -119,17 +121,38 @@ def delete_user() -> None:
     }).get('proceed')
 
     if not proceed: 
-        print(t('prompt', 'cancel'))
+        console.print(t('prompt', 'cancel'))
         return
 
-    config.set('users', [user for user in users if user.get('username') != username])
+    config.delete('users', 'username', username)
+    console.print(t('succes.user', 'deleted'))
 
 @click.command()
-# @auth_cli()
-def create_database() -> None:
-    print('Woho!')
+@auth_cli()
+def create_database(username: str) -> None:
+    database_name = prompt({
+        'type'    : 'input',
+        'message' :  t('prompt.enter', 'database_name'),
+        'name'    : 'database_name'
+    }).get('database_name')
+    
+    if any(database.get('name') == database_name for database in config.get('databases')):
+        console.print('\n' + t('errors.database', 'already_exist', database_name = database_name), style = 'bold red')
+        return
 
-    database = Moonlight('torvus')
+    database = Moonlight(database_name)
+
+    config.push('databases', {
+        'id'         : generate_uuid(),
+        'name'       : database_name,
+        'path'       : database.filename,
+        'logs_path'  : database.logs_path,
+        'created_at' : get_now_datetime(),
+        'author'     : username
+    })
+
+    console.print('\n' + t('success.database', 'created'), style = 'bold green')
+
 
 @click.group()
 def cli() -> None: ...
