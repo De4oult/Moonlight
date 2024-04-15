@@ -11,6 +11,10 @@ configuration: dict[str, any] = {
     'api_keys'  : []
 }
 
+class Moonfile:
+    def __init__(self) -> None:
+        pass
+
 def set_app(url: str) -> None: 
     configuration['host'], configuration['port'] = url.split(':')
 

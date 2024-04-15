@@ -6,3 +6,4 @@ class Style:
         self.success = 'bold green'
         self.warning = 'bold yellow'
         self.error   = 'bold red'
+        self.title   = 'bold purple'

@@ -1,7 +1,6 @@
 from sanic               import Sanic, Request
 from sanic.response      import json
 from sanic_cors          import CORS
-from functools           import wraps
 from datetime            import datetime, timedelta
 
 from Moonlight.moonlight  import Moonlight

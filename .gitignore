@@ -163,6 +163,7 @@ key
 deploy
 test
 
-database/
+databases/
 logs/
 test.py
+config.json

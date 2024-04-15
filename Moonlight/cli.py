@@ -12,7 +12,9 @@ from Moonlight.api        import create_application
 from Moonlight.messages   import t
 from Moonlight.decorators import auth_cli
 from Moonlight.moonlight  import Moonlight
+from Moonlight.methods    import Methods
 
+import asyncio
 import click
 
 console = Console()
@@ -58,10 +60,7 @@ def configure() -> None:
         'name'    : 'loggers'
     }).get('loggers')
 
-    config.set('host',      host)
-    config.set('port',      port)
-    config.set('need_logs', True)
-    config.set('loggers',   loggers)
+    Methods.configure(host, port, loggers)
 
     console.print('\n' + t('success.application', 'configured'), style = 'bold green')
 
@@ -96,19 +95,15 @@ def create_user() -> None:
         'name'    : 'password'
     }).get('password')
 
-    new_user: dict[str, any] = {
-        'username' : username,
-        'password' : password_hash(password)
-    }
-
-    new_user['permissions'] = prompt({
+    permissions = prompt({
         'type'    : 'list',
         'message' : t('prompt.select', 'permissions', username = username),
         'choices' : [t('permissions', 'viewer'), t('permissions', 'editor'), t('permissions', 'admin')],
         'name'    : 'permissions'
-    }).get('permissions').lower()
+    }).get('permissions')
         
-    config.push('users', new_user)
+    Methods.create_user(username, password, permissions)
+    
     console.print(t('success.user', 'created'))
 
 @click.command()
@@ -126,6 +121,10 @@ def delete_user() -> None:
         'name'    : 'username'
     }).get('username')
 
+    if username == app_data.get('self_admin'):
+        console.print(t('errors.user', 'self_admin', self_admin_name = username), style = 'bold red')
+        return
+
     proceed = prompt({
         'type'    : 'confirm',
         'message' : t('prompt.confirm', 'delete_user', username = username),
@@ -137,7 +136,7 @@ def delete_user() -> None:
         console.print(t('prompt', 'cancel'))
         return
 
-    config.delete('users', 'username', username)
+    Methods.delete_user(username)
     console.print(t('success.user', 'deleted'))
 
 @click.command()
@@ -153,16 +152,7 @@ def create_database(username: str) -> None:
         console.print('\n' + t('errors.database', 'already_exist', database_name = database_name), style = 'bold red')
         return
 
-    database = Moonlight(database_name)
-
-    config.push('databases', {
-        'id'         : generate_uuid(),
-        'name'       : database_name,
-        'path'       : database.filename,
-        'logs_path'  : database.logs_path,
-        'created_at' : get_now_datetime(),
-        'author'     : username
-    })
+    Moonlight(database_name, username)
 
     console.print('\n' + t('success.database', 'created'), style = 'bold green')
 
@@ -184,7 +174,7 @@ def delete_database(username: str) -> None:
 
     database_to_delete = next((database for database in databases if database.get('name') == database_name), None)
 
-    if database_to_delete.get('author') != username:
+    if database_to_delete.get('author') not in (username, app_data.get('self_admin')):
         console.print('\n' + t('errors.database', 'not_author', database_name = database_name), style = 'bold red')
         return
 
@@ -199,8 +189,12 @@ def delete_database(username: str) -> None:
         console.print(t('prompt', 'cancel'))
         return
 
-    remove_file(Moonlight(database_name).filename)
-    config.delete('databases', 'name', database_name)
+    database = Moonlight(database_name)
+
+    database.logger.stop()
+
+    Methods.delete_database(database_name, database.filename, database.logs_path)
+    
     console.print('\n' + t('success.database', 'deleted'), style = 'bold green')
 
 @click.command()
@@ -258,7 +252,7 @@ def database(username: str) -> None:
         padding = 1
     )
 
-    data_to_show = Moonlight(database_to_show.get('name')).all()
+    data_to_show = asyncio.run(Moonlight(database_to_show.get('name')).all())
 
     if len(data_to_show) == 0:
         console.print('\n' + t('info.database', 'empty'), style = 'blue')

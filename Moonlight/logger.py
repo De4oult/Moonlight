@@ -24,5 +24,8 @@ class Logger:
     # def filter_show_messages(self, record):
     #     return record['level'].name.lower() in self.show_messages
 
-    async def write(self, text: str, type: str):
+    async def write(self, text: str, type: str) -> None:
         getattr(logger, type.lower())(text)
+
+    def stop(self) -> None:
+        logger.remove()

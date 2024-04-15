@@ -1,9 +1,11 @@
 from filelock import FileLock
 from uuid     import uuid4
 
-from Moonlight.logger import Logger
-from Moonlight.paths  import make_database_path, make_logging_path
-from Moonlight.tools  import strip_ext, check_path_exist
+from Moonlight.logger  import Logger
+from Moonlight.paths   import make_database_path, make_logging_path
+from Moonlight.tools   import check_path_exist, get_filename_from_path
+from Moonlight.methods import Methods
+from Moonlight.config  import app_data
 
 import json
 import os
@@ -31,11 +33,13 @@ class Moonlight:
                 * 'warning'
                 * 'error'
     """
-    def __init__(self, filename: str, show_messages: tuple = ('warning', 'error')) -> None:
-        self.logs_path = make_logging_path(strip_ext(filename, '.json'))
+    def __init__(self, filename: str, author: str = app_data.get('self_admin'), show_messages: tuple = ('warning', 'error')) -> None:
+        self.logs_path = make_logging_path(filename)
         self.filename  = make_database_path(filename)
         
         init_database(self.filename)
+
+        Methods.create_database(get_filename_from_path(self.filename), self.filename, self.logs_path, author)
 
         self.__primary_key = 'id'
         self.lock          = FileLock(f'{self.filename}.lock')
@@ -75,7 +79,7 @@ class Moonlight:
 
                 return data_to_push.get(self.__primary_key)
 
-    def all(self) -> list[dict[str, any]]:
+    async def all(self) -> list[dict[str, any]]:
         """
         Get all objects from the database
 
@@ -108,8 +112,7 @@ class Moonlight:
                 result: list = []
                 
                 for data in database_data.get('data'):
-                    if all((x in data) and (data[x] == query[x]) for x in query):
-                        result.append(data)
+                    if all((x in data) and (data[x] == query[x]) for x in query): result.append(data)
 
                 if result == []:
                     await self.logger.write(f'Nothing to get [from `{self.filename}`: get({query})] \n\n>>> No element with {query}', 'error')
@@ -192,10 +195,9 @@ class Moonlight:
         """
         Removes database file
         """
-        if os.path.isfile(self.filename):
-            os.remove(self.filename)
+        self.logger.stop()
 
-        await self.logger.write(f'Database drop [from `{self.filename}`: drop()]', 'success')
+        Methods.delete_database(get_filename_from_path(self.filename), self.filename, self.logs_path)
 
 
     # Tools

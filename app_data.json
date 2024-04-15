@@ -18,5 +18,6 @@
         "databases": [],
         "auto_schemas" : false
     },
+    "self_admin" : "[MOONLIGHT]",
     "current_locale": "en"
 }

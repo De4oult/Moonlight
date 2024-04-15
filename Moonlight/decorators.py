@@ -35,10 +35,12 @@ def auth_cli(minimal_permissions):
         def decorated_function(*args, **kwargs):
             users = config.get('users')
 
+            console.print(t('methods', 'auth'), style = 'bold purple')
+
             if len(users) == 0:
                 console.print('\n' + t('errors.user', 'need_create_user'), style = 'bold red')
                 return
-            
+
             username = prompt({
                 'type'    : 'input',
                 'message' :  t('prompt.enter', 'username'),

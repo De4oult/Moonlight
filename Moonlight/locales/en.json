@@ -46,7 +46,8 @@
             "need_create_user" : "First you need to create user",
             "cant_find"        : "Could not find user named `{username}`",
             "invalid_password" : "Incorrect password",
-            "low_permissions"  : "Only a person with `{minimal_permissions}` level access or higher can execute this command. \nYou are a `{permissions}` now."
+            "low_permissions"  : "Only a person with `{minimal_permissions}` level access or higher can execute this command. \nYou are a `{permissions}` now.",
+            "self_admin"       : "You cannot create a user named `{self_admin_name}`. \nIt's reserved."
         },
         "database" : {
             "no_one"        : "There are no databases",
@@ -65,6 +66,9 @@
         "users" : {
 
         }
+    },
+    "methods" : {
+        "auth" : "Authentication"
     },
     "permissions" : {
         "viewer"  : "Viewer",
