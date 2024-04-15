@@ -4,19 +4,27 @@
             "loggers"     : "Select which messages you want to see in console output",
             "permissions" : "Select permissions for user `{username}`",
             "user"        : "Select user",
-            "locale"      : "Select locale"
+            "locale"      : "Select locale",
+            "database"    : "Select database"
         },
         "enter" : {
-            "username"      : "Enter username: ",
-            "password"      : "Enter password: ",
-            "database_name" : "Enter database name: "
+            "username"      : "Enter username:",
+            "password"      : "Enter password:",
+            "database_name" : "Enter database name:",
+            "host"          : "Enter host ip:",
+            "port"          : "Enter port:"
         },
         "confirm" : {
-            "delete_user" : "Do you really want to delete user `{username}`"
+            "delete_user"     : "Do you really want to delete user `{username}`",
+            "delete_database" : "Do you really want to delete database `{database_name}`"
         },
         "cancel" : "Action cancelled"
     },
-    "info"     : {},
+    "info"     : {
+        "database" : {
+            "empty" : "There's nothing to see. The table is empty."
+        }
+    },
     "success"  : {
         "application" : {
             "configured" : "Application is configured"
@@ -37,15 +45,30 @@
             "already_exist"    : "User with name `{username}` already exists",
             "need_create_user" : "First you need to create user",
             "cant_find"        : "Could not find user named `{username}`",
-            "invalid_password" : "Incorrect password"
+            "invalid_password" : "Incorrect password",
+            "low_permissions"  : "Only a person with `{minimal_permissions}` level access or higher can execute this command. \nYou are a `{permissions}` now."
         },
         "database" : {
-            "already_exist" : "Database with name `{database_name}` already exists"
+            "no_one"        : "There are no databases",
+            "already_exist" : "Database with name `{database_name}` already exists",
+            "not_author"    : "You are not the creator of `{database_name}`. \nOnly the creator can delete the database."
+        }
+    },
+    "tables"        : {
+        "databases" : {
+            "title"      : "Databases",
+            "id"         : "Identifier",
+            "name"       : "Name",
+            "author"     : "Author",
+            "created_at" : "Created"
+        },
+        "users" : {
+
         }
     },
     "permissions" : {
         "viewer"  : "Viewer",
         "editor"  : "Editor",
-        "admin"   : "Admin"
+        "admin"   : "Administrator"
     }
 }

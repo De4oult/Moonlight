@@ -1,12 +1,12 @@
 from loguru import logger
-from tools  import check_path
+from tools  import check_path_exist
 
 class Logger:
     def __init__(self, filename: str, show_messages: tuple[str]) -> None:
         self.filename = filename
         self.show_messages = show_messages
 
-        check_path(self.filename)
+        check_path_exist(self.filename)
 
         logger.remove()
         logger.add(

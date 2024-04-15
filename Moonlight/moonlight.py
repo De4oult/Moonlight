@@ -3,7 +3,7 @@ from uuid     import uuid4
 
 from Moonlight.logger import Logger
 from Moonlight.paths  import make_database_path, make_logging_path
-from Moonlight.tools  import strip_ext, check_path
+from Moonlight.tools  import strip_ext, check_path_exist
 
 import json
 import os
@@ -12,8 +12,10 @@ EMPTY: dict[str, list] = {
     'data' : []
 }
 
-def init_database(path: str): 
-    with open(check_path(path), 'w', encoding = 'utf-8') as database_file: 
+def init_database(path: str):
+    if check_path_exist(path): return
+
+    with open(path, 'w', encoding = 'utf-8') as database_file: 
         json.dump(EMPTY, database_file, indent = 4)
 
 class Moonlight:
@@ -29,13 +31,13 @@ class Moonlight:
                 * 'warning'
                 * 'error'
     """
-    def __init__(self, filename: str, primary_key: str = 'id', show_messages: tuple = ('warning', 'error')) -> None:
+    def __init__(self, filename: str, show_messages: tuple = ('warning', 'error')) -> None:
         self.logs_path = make_logging_path(strip_ext(filename, '.json'))
         self.filename  = make_database_path(filename)
         
         init_database(self.filename)
 
-        self.__primary_key = str(primary_key)
+        self.__primary_key = 'id'
         self.lock          = FileLock(f'{self.filename}.lock')
         self.logger        = Logger(self.logs_path, show_messages)
 
@@ -73,7 +75,7 @@ class Moonlight:
 
                 return data_to_push.get(self.__primary_key)
 
-    async def all(self) -> list[dict[str, any]]:
+    def all(self) -> list[dict[str, any]]:
         """
         Get all objects from the database
 
@@ -81,7 +83,7 @@ class Moonlight:
         """
         with self.lock:
             with open(self.filename, 'r', encoding = 'utf-8') as database_file:
-                await self.logger.write(f'Returned [from `{self.filename}`: all()]', 'success')
+                # self.logger.write(f'Returned [from `{self.filename}`: all()]', 'success')
                 
                 return self.__get_load_func()(database_file).get('data')
             

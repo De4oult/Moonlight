@@ -11,7 +11,13 @@ def get_now_datetime() -> str:                  return datetime.now().strftime('
 def strip_ext(filename: str, ext: str) -> str:  return filename.rstrip(ext) if filename.endswith(ext) else filename
 def add_ext(filename: str, ext: str) -> str:    return filename if filename.endswith(ext) else filename + ext
 def generate_uuid() -> str:                     return int(str(uuid4().int)[:14]) 
-def check_path(path: str) -> str: 
+def remove_file(filename: str) -> str:
+    if os.path.isfile(filename):
+        os.remove(filename)
+    
+def check_path_exist(path: str) -> bool:
+    if os.path.exists(path): return True
+
     os.makedirs(os.path.dirname(path), exist_ok = True)
 
-    return path
+    return False
