@@ -7,7 +7,6 @@ from rich.console         import Console
 from rich.table           import Table
 
 from Moonlight.config     import config, app_data
-from Moonlight.tools      import password_hash, generate_uuid, get_now_datetime, remove_file
 from Moonlight.api        import create_application
 from Moonlight.messages   import t
 from Moonlight.decorators import auth_cli
@@ -265,6 +264,13 @@ def database(username: str) -> None:
 
     console.print(table)
 
+@click.command()
+@auth_cli('viewer')
+def create_key(username: str) -> None:
+    token_data: dict[str, str] = Methods.create_token(username)
+
+    console.print_json(data = token_data)
+
 @click.group()
 def cli() -> None: ...
 
@@ -277,6 +283,7 @@ cli.add_command(create_database)
 cli.add_command(delete_database)
 cli.add_command(databases)
 cli.add_command(database)
+cli.add_command(create_key)
 
 if __name__ == '__main__':
     cli()

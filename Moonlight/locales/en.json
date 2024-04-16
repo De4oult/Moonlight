@@ -38,7 +38,12 @@
             "deleted" : "Database successfully deleted"
         }
     },
-    "warning"  : {},
+    "warnings"  : {
+        "moonfile" : {
+            "undefined_command" : "During the Moonfile parsing, an unknown `{command}` command was detected, it was skipped.",
+            "no_port_app"       : "[bold white]APP[/bold white]: You did not specify [white]`port`[/white]. The default value is [bold white]{default_port}[/bold white]"
+        }
+    },
     "errors"   : {
         "user" : {
             "no_one"           : "There are no users",
@@ -53,6 +58,13 @@
             "no_one"        : "There are no databases",
             "already_exist" : "Database with name `{database_name}` already exists",
             "not_author"    : "You are not the creator of `{database_name}`. \nOnly the creator can delete the database."
+        },
+        "moonfile" : {
+            "no_host_app"           : "[bold white]APP[/bold white]: requires two arguments ([white]`port`[/white] is optional, default: [bold white]{default_port}[/bold white]). You have not passed [bold white]`host`[/bold white]",
+            "params_create_user"    : "[bold white]CREATE_USER[/bold white]: requires three arguments ([white]`permissions`[/white], [white]`username`[/white], [white]`password`[/white]). You passed [bold white]{length_args}[/bold white]",
+            "undefined_logger_type" : "[bold white]LOG[/bold white]: accepts only [bold white]`{default_loggers}`[/bold white] loggers. Undefined logger was found [bold white]{undefined_logger}[/bold white]",
+            "undefined_user"        : "[bold white]DATABASE[/bold white]: first you need to create user. Undefined user was found [bold white]{undefined_user}[/bold white]",
+            "no_params_database"    : "[bold white]DATABASE[/bold white]: requires two arguments ([white]`author`[/white] is optional, default: [bold white]{default_author}[/bold white]). You have not passed [bold white]`database name`[/bold white]"
         }
     },
     "tables"        : {

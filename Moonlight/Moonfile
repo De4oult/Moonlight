@@ -1,8 +1,0 @@
-APP 127.0.0.1:3000
-
-LOGGING success warning error info
-
-CREATE_USER ADMINISTRATOR de4oult 54685521
-
-DATABASE cakes @de4oult
-DATABASE users

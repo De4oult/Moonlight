@@ -18,6 +18,12 @@
         "databases": [],
         "auto_schemas" : false
     },
+    "loggers" : [
+        "info",
+        "success",
+        "warning",
+        "error"
+    ],
     "self_admin" : "[MOONLIGHT]",
     "current_locale": "en"
 }

@@ -7,6 +7,7 @@ from Moonlight.moonlight  import Moonlight
 from Moonlight.config     import config
 from Moonlight.tools      import password_hash, generate_token
 from Moonlight.decorators import permission
+from Moonlight.methods    import Methods
 
 # databases: Moonlight = Moonlight(
 #     'databases.json', 
@@ -26,27 +27,17 @@ def create_application() -> Sanic:
     @app.route('/auth', methods = ['POST'])
     async def database_auth(request: Request) -> json:
         username: str = request.json.get('username')
-        password: str = password_hash(request.json.get('password'))
+        password: str = request.json.get('password')
 
         users: list[dict[str, any]] = config.get('users')
 
-        user: dict[str, any] = next((user for user in users if (user.get('username') == username) and user.get('password') == password), None)
+        user: dict[str, any] = next((user for user in users if (user.get('username') == username) and user.get('password') == password_hash(password)), None)
         
         if not user: return json({ 'error' : f'User `{username}`: invalid credentials' }, status = 401)
-
-        token:   str = generate_token()
-        expires: str = (datetime.now() + timedelta(hours = 3)).isoformat()
-        created: str = datetime.now().isoformat()
         
-        config.push('api_keys', {
-            'author'     : username,
-            'token'      : token,
-            'expires'    : expires,
-            'created'    : created,
-            'permissions': user.get('permissions')
-        })
+        token_data = Methods.create_token(username)
 
-        return json({ 'token' :  token }, status = 200)
+        return json(token_data, status = 200)
 
     @app.middleware('request')
     async def validate_auth(request: Request) -> json:

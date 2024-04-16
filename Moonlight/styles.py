@@ -1,9 +1,8 @@
+from enum import Enum
 
-
-class Style:
-    def __init__(self) -> None:
-        self.info    = 'blue'
-        self.success = 'bold green'
-        self.warning = 'bold yellow'
-        self.error   = 'bold red'
-        self.title   = 'bold purple'
+class Style(Enum):
+    info    = 'blue'
+    success = 'bold green'
+    warning = 'bold yellow'
+    error   = 'bold red'
+    title   = 'bold purple'

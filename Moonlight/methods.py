@@ -1,5 +1,7 @@
-from Moonlight.tools     import generate_uuid, get_now_datetime, remove_file, password_hash
+from Moonlight.tools     import generate_uuid, get_now_datetime, remove_file, password_hash, generate_token
 from Moonlight.config    import config
+
+from datetime import datetime, timedelta
 
 class Methods:
     def configure(host: str, port: int, loggers: list[str]) -> None:
@@ -39,3 +41,20 @@ class Methods:
         remove_file(logs_path)
         
         config.delete('databases', 'name', database_name)
+
+    def create_token(username: str) -> dict[str, str]:
+        token: str   = generate_token()
+        expires: str = (datetime.now() + timedelta(hours = 3)).isoformat()
+        created: str = datetime.now().isoformat()        
+
+        config.push('api_keys', {
+            'author'     : username,
+            'token'      : token,
+            'expires'    : expires,
+            'created'    : created
+        })
+
+        return {
+            'token'   : token, 
+            'expires' : expires
+        }
