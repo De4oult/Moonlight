@@ -16,7 +16,8 @@
         },
         "confirm" : {
             "delete_user"     : "Do you really want to delete user `{username}`",
-            "delete_database" : "Do you really want to delete database `{database_name}`"
+            "delete_database" : "Do you really want to delete database `{database_name}`",
+            "use_moonfile"    : "Moonfile has been found in your working directory. Do you want to use it for configuration?"
         },
         "cancel" : "Action cancelled"
     },

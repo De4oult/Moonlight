@@ -17,6 +17,7 @@ def remove_file(filename: str) -> None:
     if os.path.isfile(filename):
         os.remove(filename)
     
+def is_file_exist(path: str) -> bool: return os.path.exists(path)
 def check_path_exist(path: str) -> bool:
     if os.path.exists(path): return True
 

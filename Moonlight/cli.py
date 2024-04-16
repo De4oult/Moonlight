@@ -12,6 +12,9 @@ from Moonlight.messages   import t
 from Moonlight.decorators import auth_cli
 from Moonlight.moonlight  import Moonlight
 from Moonlight.methods    import Methods
+from Moonlight.moonfile   import Moonfile
+from Moonlight.tools      import is_file_exist
+from Moonlight.paths      import make_moonfile_path
 
 import asyncio
 import click
@@ -37,6 +40,22 @@ def serve() -> None:
 
 @click.command()
 def configure() -> None:
+    if is_file_exist(make_moonfile_path(app_data.get('moonfile'))):
+        use_moonfile: bool = prompt({
+            'type'    : 'confirm',
+            'message' : t('prompt.confirm', 'use_moonfile'),
+            'name'    : 'use_moonfile',
+            'default' : False
+        }).get('use_moonfile')
+
+        if use_moonfile:
+            moonfile: Moonfile = Moonfile()
+            moonfile.parse_config()
+            moonfile.compile()
+
+            console.print('\n' + t('success.application', 'configured'), style = 'bold green')
+            return
+
     host = prompt({
         'type'    : 'input',
         'message' :  t('prompt.enter', 'host'),

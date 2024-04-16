@@ -1,12 +1,11 @@
 PURE
 
-APP 127.0.0.1:5000
+APP 127.0.0.1:3000
 
-LOG success, warning, error, info
+LOG success, warning, error
 
-CREATE_USER administrator de4oult 54685521
+CREATE_USER administrator admin admin
 
 ? this is a comment
 
-DATABASE cakes @de4oult
-DATABASE users
+DATABASE users @admin

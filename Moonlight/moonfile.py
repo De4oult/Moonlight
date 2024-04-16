@@ -100,12 +100,11 @@ class Moonfile:
             console.print(t('warnings.moonfile', 'ignored'), style = 'bold yellow')
             return
         
-        Methods.configure(self.app_config.get('host'), self.app_config.get('port'), self.app_config.get('loggers'))
+        if self.app_config: 
+            Methods.configure(self.app_config.get('host'), self.app_config.get('port'), self.app_config.get('loggers'))
 
-        for user in self.users:
+        for user in self.users: 
             Methods.create_user(user.get('username'), user.get('password'), user.get('permissions'))
-
-
-moonfile = Moonfile()
-moonfile.parse_config()
-moonfile.compile()
+        
+        for database in self.databases: 
+            Moonlight(database.get('name'), database.get('author'))
