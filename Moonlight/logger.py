@@ -1,31 +1,29 @@
-from loguru import logger
-from tools  import check_path_exist
+from Moonlight.styles import Style
+from Moonlight.tools  import check_path_exist, get_now_datetime
+
+from rich.console import Console
+
+console = Console()
 
 class Logger:
-    def __init__(self, filename: str, show_messages: tuple[str]) -> None:
-        self.filename = filename
-        self.show_messages = show_messages
+    def __init__(self, path: str, loggers: tuple[str]) -> None:
+        self.path: str = path
+        self.loggers: tuple[str] = loggers
 
-        check_path_exist(self.filename)
+        check_path_exist(self.path)
 
-        logger.remove()
-        logger.add(
-            self.filename, 
-            format='<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> [<level>{level}</level>] \n\t<b>{message}</b>',
-            level='DEBUG'
-        )
-        
-        # logger.add(
-        #     self.filter_show_messages,
-        #     format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS zz}</green> [<level>{level: <8}</level>] \n <yellow>Line {line: >4} ({file}):</yellow> <b>{message}</b>",
-        #     level="DEBUG"
-        # )
-    
-    # def filter_show_messages(self, record):
-    #     return record['level'].name.lower() in self.show_messages
+    def write(self, content: str, logger: str) -> None:
+        if logger not in self.loggers: return
 
-    async def write(self, text: str, type: str) -> None:
-        getattr(logger, type.lower())(text)
+        header:  str = f'[{get_now_datetime()}] <{logger.upper()}>'
+        content: str = f'\n-> {content}'
 
-    def stop(self) -> None:
-        logger.remove()
+        console.rule(f'[{Style[logger].value}]' + header, style = Style[logger].value, align = 'left')
+        console.print(content, style = Style[logger].value)
+
+        with open(self.path, 'a+', encoding = 'utf-8') as logging_file: logging_file.write(f'{header}\n{content}\n\n')
+
+if __name__ == '__main__':
+    logger = Logger('E:\\Документы\\Программирование\\Moonlight\\logs\\test.log', ['success', 'info'])
+
+    logger.write('DASDASD', 'info')

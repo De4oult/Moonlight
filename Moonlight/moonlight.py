@@ -1,11 +1,10 @@
-from filelock import FileLock
-from uuid     import uuid4
-
 from Moonlight.logger  import Logger
 from Moonlight.paths   import make_database_path, make_logging_path
-from Moonlight.tools   import check_path_exist, get_filename_from_path
+from Moonlight.tools   import check_path_exist, get_filename_from_path, generate_uuid
 from Moonlight.methods import Methods
-from Moonlight.config  import app_data
+from Moonlight.config  import config, app_data
+
+from filelock import FileLock
 
 import json
 import os
@@ -33,9 +32,9 @@ class Moonlight:
                 * 'warning'
                 * 'error'
     """
-    def __init__(self, filename: str, author: str = app_data.get('self_admin'), show_messages: tuple = ('warning', 'error')) -> None:
-        self.logs_path = make_logging_path(filename)
+    def __init__(self, filename: str, author: str = app_data.get('self_admin')) -> None:
         self.filename  = make_database_path(filename)
+        self.logs_path = make_logging_path(filename)
         
         init_database(self.filename)
 
@@ -43,9 +42,10 @@ class Moonlight:
 
         self.__primary_key = 'id'
         self.lock          = FileLock(f'{self.filename}.lock')
-        self.logger        = Logger(self.logs_path, show_messages)
 
-    def __get_id(self) -> int:           return int(str(uuid4().int)[:14])
+        self.logger: Logger = Logger(self.logs_path, config.get('loggers')) 
+
+    def __get_id(self) -> int:           return generate_uuid()
     def __cast_id(self, id: int) -> int: return int(id)
     def __get_load_func(self):           return json.load
     def __get_dump_func(self):           return json.dump
@@ -195,7 +195,6 @@ class Moonlight:
         """
         Removes database file
         """
-        self.logger.stop()
 
         Methods.delete_database(get_filename_from_path(self.filename), self.filename, self.logs_path)
 
