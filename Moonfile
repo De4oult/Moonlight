@@ -1,6 +1,8 @@
-APP 127.0.0.1:3000
+PURE
 
-LOG success, warning, error
+APP 127.0.0.1:5000
+
+LOG success, warning, error, info
 
 CREATE_USER administrator de4oult 54685521
 

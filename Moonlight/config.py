@@ -3,8 +3,8 @@ from paths import conf_path, data_path
 import json
 import os
 
-def init_config(path: str, initial_data: dict[str, any]) -> None:
-    if os.path.exists(path): return
+def init_config(path: str, initial_data: dict[str, any], skip: bool = False) -> None:
+    if os.path.exists(path) and not skip: return
 
     with open(path, 'w', encoding = 'utf-8') as config_file:
         json.dump(initial_data, config_file, indent = 4)
@@ -33,6 +33,9 @@ class Config:
     
     def delete(self, tab: str, key: str, value: str) -> None:
         self.set(tab, [element for element in self.config.get(tab) if element.get(key) != value])
+
+    def reinit(self, initial_data: dict[str, any]) -> None:
+        init_config(self.path, initial_data, skip = True)
 
 app_data = Config(data_path)
 config   = Config(conf_path, app_data.get('base_config'))

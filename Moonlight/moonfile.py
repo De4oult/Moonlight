@@ -1,5 +1,5 @@
 from Moonlight.paths     import make_moonfile_path
-from Moonlight.config    import app_data
+from Moonlight.config    import app_data, config
 from Moonlight.messages  import t
 from Moonlight.methods   import Methods
 from Moonlight.moonlight import Moonlight
@@ -25,10 +25,11 @@ class Moonfile:
                 
                 if not parts: continue 
                 
-                command: str     = parts[0]
+                command: str     = parts[0].upper()
                 args: list[str]  = parts[1:]
 
-                match command:         
+                match command:     
+                    case 'PURE':        config.reinit(app_data.get('base_config'))
                     case 'APP':         self.set_app(*args)
                     case 'LOG':         self.set_logging(*args)
                     case 'CREATE_USER': self.create_user(*args)
@@ -42,13 +43,12 @@ class Moonfile:
             console.print(t('errors.moonfile', 'no_host_app', default_port = app_data.get('base_config').get('port')), style = 'bold red')
             return
         
-        host = args[0].split(':')
+        host = list(filter(None, args[0].split(':')))
 
         self.app_config['host'] = host[0]
 
         if len(host) == 1:
             console.print(t('warnings.moonfile', 'no_port_app', default_port = app_data.get('base_config').get('port')), style = 'bold yellow')
-            return
         
         self.app_config['port'] = host[1] if len(host) > 1 else app_data.get('base_config').get('port')
 
@@ -86,8 +86,6 @@ class Moonfile:
         name   = args[0]
         author = args[1] if len(args) > 1 else app_data.get('self_admin')
 
-        print(name, author)
-
         if author and author.startswith('@'):
             author = author[1:]
 
@@ -99,12 +97,15 @@ class Moonfile:
 
     def compile(self) -> None:
         if self.ignore:
-            console.print(t('warnings.moonfile', 'ignored'), style = 'bold yellow') # add message "Moonfile ignored. Exiting"
+            console.print(t('warnings.moonfile', 'ignored'), style = 'bold yellow')
             return
         
+        Methods.configure(self.app_config.get('host'), self.app_config.get('port'), self.app_config.get('loggers'))
 
-config = Moonfile()
-config.parse_config()
-print("App Config:", config.app_config)
-print("Users:", config.users)
-print("Databases:", config.databases)
+        for user in self.users:
+            Methods.create_user(user.get('username'), user.get('password'), user.get('permissions'))
+
+
+moonfile = Moonfile()
+moonfile.parse_config()
+moonfile.compile()

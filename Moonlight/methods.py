@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 class Methods:
     def configure(host: str, port: int, loggers: list[str]) -> None:
         config.set('host',      host)
-        config.set('port',      port)
+        config.set('port',      int(port))
         config.set('need_logs', True)
         config.set('loggers',   loggers)
 
