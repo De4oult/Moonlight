@@ -88,5 +88,29 @@
         "viewer"  : "Viewer",
         "editor"  : "Editor",
         "admin"   : "Administrator"
+    },
+    "loggers" : {
+        "info" : {
+            "database_connect" : "Moonlight: Database connected",
+            "database_drop"    : "DROP: Database dropped"
+        },
+        "success" : {
+            "pushed"  : "PUSH: {data}",
+            "get_all" : "ALL: all elements have been returned",
+            "get"     : "GET: {result}",
+            "updated" : "UPDATE: {result}",
+            "deleted" : "DELETE: Element with id = `{id}` was deleted"
+        },
+        "warning" : {
+            "no_result" : "GET: There is no element suitable for {query}"
+        },
+        "error" : {
+            "must_be_dict" : "{command}: must be dictionary. Not {typeof}",
+            "nothing_to_push" : "PUSH: nothing to push. Query is empty",
+            "empty_query" : "GET: query is empty",
+            "id_not_specified" : "ID not specified in {data}",
+            "nothing_to_update" : "UPDATE: There is no element suitable for {query}",
+            "id_not_found" : "DELETE: Element with id = `{id}` was not found"
+        }
     }
 }

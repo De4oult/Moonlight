@@ -6,3 +6,4 @@ click
 pick
 InquirerPy
 rich
+loguru

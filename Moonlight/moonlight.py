@@ -1,8 +1,9 @@
-from Moonlight.logger  import Logger
-from Moonlight.paths   import make_database_path, make_logging_path
-from Moonlight.tools   import check_path_exist, get_filename_from_path, generate_uuid
-from Moonlight.methods import Methods
-from Moonlight.config  import config, app_data
+from Moonlight.logger   import Logger
+from Moonlight.paths    import make_database_path, make_logging_path
+from Moonlight.tools    import check_path_exist, get_filename_from_path, generate_uuid
+from Moonlight.methods  import Methods
+from Moonlight.config   import config, app_data
+from Moonlight.messages import t
 
 from filelock import FileLock
 
@@ -33,17 +34,20 @@ class Moonlight:
                 * 'error'
     """
     def __init__(self, filename: str, author: str = app_data.get('self_admin')) -> None:
-        self.filename  = make_database_path(filename)
-        self.logs_path = make_logging_path(filename)
+        self.filename: str  = make_database_path(filename)
+        self.logs_path: str = make_logging_path(filename)
+        self.name: str      = get_filename_from_path(self.filename)
         
         init_database(self.filename)
 
-        Methods.create_database(get_filename_from_path(self.filename), self.filename, self.logs_path, author)
+        Methods.create_database(self.name, self.filename, self.logs_path, author)
 
         self.__primary_key = 'id'
         self.lock          = FileLock(f'{self.filename}.lock')
 
         self.logger: Logger = Logger(self.logs_path, config.get('loggers')) 
+        
+        self.logger.write(t('loggers.info', 'database_connect'), 'info')
 
     def __get_id(self) -> int:           return generate_uuid()
     def __cast_id(self, id: int) -> int: return int(id)
@@ -51,7 +55,7 @@ class Moonlight:
     def __get_dump_func(self):           return json.dump
 
     # Database methods hier
-    async def push(self, data_to_push: dict[str, any]) -> int:
+    async def push(self, data_to_push: dict[str, any]) -> int | None:
         """
         Adds an object with the given fields to the database
 
@@ -60,10 +64,14 @@ class Moonlight:
 
         @returns {id: int}.
         """
-        if data_to_push == {} or not data_to_push:
-            await self.logger.write(f'Nothing to push [from `{self.filename}`: push({data_to_push})] \n\n>>> Query is empty', 'error')
+        if type(data_to_push) != type({}): 
+            self.logger.write(t('loggers.error', 'must_be_dict', command = 'PUSH', typeof = type(data_to_push)), 'error')    
+            return
+        
+        if data_to_push == {}:
+            self.logger.write(t('loggers.error', 'nothing_to_push'), 'error')
             
-            return -1
+            return
 
         with self.lock:
             with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
@@ -75,7 +83,7 @@ class Moonlight:
                 database_file.seek(0)
                 self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
 
-                await self.logger.write(f'Pushed [from `{self.filename}`: push({data_to_push})]', 'success')
+                self.logger.write(t('loggers.success', 'pushed', data = data_to_push), 'success')
 
                 return data_to_push.get(self.__primary_key)
 
@@ -87,11 +95,11 @@ class Moonlight:
         """
         with self.lock:
             with open(self.filename, 'r', encoding = 'utf-8') as database_file:
-                # self.logger.write(f'Returned [from `{self.filename}`: all()]', 'success')
+                self.logger.write(t('loggers.success', 'get_all'), 'success')
                 
                 return self.__get_load_func()(database_file).get('data')
             
-    async def get(self, query: dict[str, any]) -> list[dict[str, any]]:
+    async def get(self, query: dict[str, any]) -> list[dict[str, any]] | list | None:
         """
         Get object/s from the database by query
 
@@ -100,10 +108,14 @@ class Moonlight:
 
         @returns {object/s: list[dict[str, any]]}.
         """
+        if type(query) != type({}): 
+            self.logger.write(t('loggers.error', 'must_be_dict', command = 'GET', typeof = type(query)), 'error')    
+            return
+        
         if query == {}:
-            await self.logger.write(f'No query [from `{self.filename}`: get({query})] \n\n>>> Query is empty', 'error')
+            self.logger.write(t('loggers.error', 'empty_query'), 'error')
             
-            return []
+            return
 
         with self.lock:
             with open(self.filename, 'r', encoding = 'utf-8') as database_file:
@@ -115,14 +127,14 @@ class Moonlight:
                     if all((x in data) and (data[x] == query[x]) for x in query): result.append(data)
 
                 if result == []:
-                    await self.logger.write(f'Nothing to get [from `{self.filename}`: get({query})] \n\n>>> No element with {query}', 'error')
+                    self.logger.write(t('loggers.error', 'no_result', query = query), 'warning')
                     return []
 
-                await self.logger.write(f'Returned [from `{self.filename}`: get({query})]', 'success')
+                self.logger.write(t('loggers.success', 'get', result = result), 'success')
 
                 return result
             
-    async def update(self, data_to_update: dict[str, any]) -> int:
+    async def update(self, data_to_update: dict[str, any]) -> None | int:
         """
         Update object in the database
 
@@ -131,10 +143,15 @@ class Moonlight:
 
         @returns {id: int}.
         """
+        if type(data_to_update) != type({}): 
+            self.logger.write(t('loggers.error', 'must_be_dict', command = 'UPDATE', typeof = type(data_to_update)), 'error')    
+
+            return
+        
         if not data_to_update.get(self.__primary_key): 
-            await self.logger.write(f'{self.__primary_key} not specified [from `{self.filename}`: update({data_to_update})] \n\n>>> No `{self.__primary_key}` in {data_to_update}', 'error')
-            
-            return -1
+            self.logger.write(t('loggers.error', 'id_not_specified', data = data_to_update), 'error')
+
+            return
         
         with self.lock:
             with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
@@ -150,9 +167,9 @@ class Moonlight:
                     result.append(data)
 
                 if not updated:
-                    await self.logger.write(f'Nothing to update [from `{self.filename}`: update({data_to_update})] \n\n>>> Element with {self.__primary_key}=`{data_to_update.get(self.__primary_key)}` was not found', 'error')
+                    self.logger.write(t('loggers.error', 'nothing_to_update', query = data_to_update), 'error')
                     
-                    return -1
+                    return
 
                 database_data['data'] = result
                 database_file.seek(0)
@@ -160,7 +177,7 @@ class Moonlight:
 
                 self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
 
-                await self.logger.write(f'Updated [from `{self.filename}`: update({data_to_update})', 'success')
+                self.logger.write(t('loggers.success', 'updated', result = result), 'success')
 
                 return data_to_update.get(self.__primary_key)
 
@@ -180,14 +197,14 @@ class Moonlight:
                 deleted_data = next((item for item in data_list if item.get(self.__primary_key) == self.__cast_id(id)), None)
 
                 if not deleted_data:
-                    await self.logger.write(f'Nothing to delete [from `{self.filename}`: delete({id})] \n\n>>> Element with {self.__primary_key}=`{id}` was not found', 'error')
+                    self.logger.write(t('loggers.error', 'id_not_found', id = id), 'error')
                     return None
                 
                 database_data['data'] = [item for item in data_list if item.get(self.__primary_key) != self.__cast_id(id)]
                 database_file.seek(0)
                 database_file.truncate()
                 self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
-                await self.logger.write(f'Deleted [from `{self.filename}`: delete({id})]', 'success')
+                self.logger.write(t('loggers.success', 'deleted', id = id), 'success')
                 return deleted_data
 
             
@@ -195,6 +212,8 @@ class Moonlight:
         """
         Removes database file
         """
+        self.logger.write(t('loggers.info', 'database_drop'), 'info')
+        self.logger.stop()
 
         Methods.delete_database(get_filename_from_path(self.filename), self.filename, self.logs_path)
 

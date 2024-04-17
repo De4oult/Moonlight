@@ -1,3 +1,7 @@
+"""
+PACKAGE INFO
+"""
+
 from .moonlight  import Moonlight
 from .logger     import Logger
 from .config     import config
