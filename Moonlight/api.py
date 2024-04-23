@@ -1,39 +1,45 @@
 from sanic               import Sanic, Request
-from sanic.response      import json
+from sanic.response      import json, html
 from sanic_cors          import CORS
 from datetime            import datetime, timedelta
+from markdown2           import markdown
 
 from Moonlight.moonlight  import Moonlight
-from Moonlight.config     import config
+from Moonlight.config     import config, app_data
 from Moonlight.tools      import password_hash, generate_token
 from Moonlight.decorators import permission
 from Moonlight.methods    import Methods
-
-# databases: Moonlight = Moonlight(
-#     'databases.json', 
-#     show_messages = (
-#         'info',
-#         'success',
-#         'warning',
-#         'error'
-#     )
-# )
 
 def create_application() -> Sanic:
     app: Sanic = Sanic('Moonlight')
 
     CORS(app)
 
+    @app.route('/docs', methods = ['GET'])
+    async def database_docs(request: Request) -> html:
+        markdown_docs: str = app_data.get('docs')
+
+        return html(
+            f'''
+            <div style="text-align: center;">
+                {markdown(markdown_docs)}
+            </div>
+            ''',
+            status = 200
+        )
+
     @app.route('/auth', methods = ['POST'])
     async def database_auth(request: Request) -> json:
         username: str = request.json.get('username')
         password: str = request.json.get('password')
 
+        if (not username) or (not password): return json({ 'error' : 'Need username and password' }, status = 401)
+
         users: list[dict[str, any]] = config.get('users')
 
         user: dict[str, any] = next((user for user in users if (user.get('username') == username) and user.get('password') == password_hash(password)), None)
         
-        if not user: return json({ 'error' : f'User `{username}`: invalid credentials' }, status = 401)
+        if not user: return json({ 'error' : 'Invalid credentials' }, status = 401)
         
         token_data = Methods.create_token(username)
 
@@ -43,6 +49,7 @@ def create_application() -> Sanic:
     async def validate_auth(request: Request) -> json:
         match request.path:
             case '/auth': return
+            case '/docs': return
             case _: pass
 
         user_token = request.headers.get('Authorization')
@@ -55,26 +62,26 @@ def create_application() -> Sanic:
 
     return app
 
-    # @app.route('/init', methods = ['POST'])
-    # @permission('Administrator')
-    # async def database_init(request: Request) -> json:
-    #     filename     : str   = str(request.json.get('name'))            if request.json.get('name')          else None
-    #     primary_key  : str   = str(request.json.get('primary_key'))     if request.json.get('primary_key')   else 'id'
-    #     show_messages: tuple = tuple(request.json.get('show_messages')) if request.json.get('show_messages') else ('warning', 'error')
+    @app.route('/init', methods = ['POST'])
+    @permission('Administrator')
+    async def database_init(request: Request) -> json:
+        filename     : str   = str(request.json.get('name'))            if request.json.get('name')          else None
+        primary_key  : str   = str(request.json.get('primary_key'))     if request.json.get('primary_key')   else 'id'
+        show_messages: tuple = tuple(request.json.get('show_messages')) if request.json.get('show_messages') else ('warning', 'error')
 
-    #     if not filename: return json({ 'description' : 'Name of database required!' }, status = 400)
+        if not filename: return json({ 'description' : 'Name of database required!' }, status = 400)
 
-    #     if await databases.contains('filename', filename): return json({ 'data' : { 'id' : (await databases.get({ 'filename' : filename }))[0].get('id'), 'msg': f'Database with name `{filename}` already exists' } }, status = 200)
+        if await databases.contains('filename', filename): return json({ 'data' : { 'id' : (await databases.get({ 'filename' : filename }))[0].get('id'), 'msg': f'Database with name `{filename}` already exists' } }, status = 200)
 
-    #     id = await databases.push({
-    #         'filename'      : filename,
-    #         'primary_key'   : primary_key, 
-    #         'show_messages' : show_messages
-    #     })
+        id = await databases.push({
+            'filename'      : filename,
+            'primary_key'   : primary_key, 
+            'show_messages' : show_messages
+        })
 
-    #     Moonlight(f'{id}.json', primary_key, show_messages)
+        Moonlight(f'{id}.json', primary_key, show_messages)
 
-    #     return json({ 'data' : { 'id' : id } }, status = 200)
+        return json({ 'data' : { 'id' : id } }, status = 200)
 
     # @app.route('/<database_id:int>/push', methods = ['POST'])
     # @permission('Editor')

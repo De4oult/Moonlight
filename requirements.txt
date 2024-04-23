@@ -7,3 +7,4 @@ pick
 InquirerPy
 rich
 loguru
+markdown2

@@ -54,7 +54,8 @@
             "cant_find"        : "Could not find user named `{username}`",
             "invalid_password" : "Incorrect password",
             "low_permissions"  : "Only a person with `{minimal_permissions}` level access or higher can execute this command. \nYou are a `{permissions}` now.",
-            "self_admin"       : "You cannot create a user named `{self_admin_name}`. \nIt's reserved."
+            "self_admin"       : "You cannot create a user named `{self_admin_name}`. \nIt's reserved.",
+            "need_admin"       : "There must be at least one administrator to start the server."
         },
         "database" : {
             "no_one"        : "There are no databases",

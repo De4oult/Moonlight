@@ -25,5 +25,6 @@
         "error"
     ],
     "self_admin" : "[MOONLIGHT]",
-    "current_locale": "en"
+    "current_locale": "en",
+    "docs" : "Hallo, **welt**!"
 }

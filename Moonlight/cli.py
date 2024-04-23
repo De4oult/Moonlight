@@ -22,7 +22,13 @@ import click
 console = Console()
 
 @click.command()
-def serve() -> None:    
+def serve() -> None:
+    users: list[dict] = config.get('users')
+
+    if not next((user.get('permissions') == 'administrator' for user in users), None):
+        console.print(t('errors.user', 'need_admin'), style = 'bold red')
+        return
+
     loader: AppLoader = AppLoader(factory = partial(create_application))
     
     app: Sanic = loader.load()
