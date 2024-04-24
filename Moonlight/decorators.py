@@ -29,6 +29,20 @@ def permission(minimal_permissions):
     
     return decorator
 
+def required_fields(*fields):
+    def decorator(func):
+        @wraps(func)
+        async def decorated_function(request, *args, **kwargs):
+            missing_fields: list[str] = [field for field in fields if field not in request.json]
+
+            if missing_fields: return json({ 'error': 'Required fields are not specified', 'missing_fields': missing_fields }, status = 400)
+
+            return await func(request, *args, **kwargs)
+        
+        return decorated_function
+    
+    return decorator
+
 def auth_cli(minimal_permissions):
     def decorator(func):
         @wraps(func)

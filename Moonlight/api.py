@@ -7,7 +7,7 @@ from markdown2           import markdown
 from Moonlight.moonlight  import Moonlight
 from Moonlight.config     import config, app_data
 from Moonlight.tools      import password_hash, generate_token
-from Moonlight.decorators import permission
+from Moonlight.decorators import permission, required_fields
 from Moonlight.methods    import Methods
 
 def create_application() -> Sanic:
@@ -29,11 +29,10 @@ def create_application() -> Sanic:
         )
 
     @app.route('/auth', methods = ['POST'])
+    @required_fields('username', 'password')
     async def database_auth(request: Request) -> json:
         username: str = request.json.get('username')
         password: str = request.json.get('password')
-
-        if (not username) or (not password): return json({ 'error' : 'Need username and password' }, status = 401)
 
         user: dict[str, any] = next((user for user in config.get('users') if (user.get('username') == username) and user.get('password') == password_hash(password)), None)
         
@@ -58,22 +57,29 @@ def create_application() -> Sanic:
 
         request.ctx.user = next(user for user in config.get('users') if user.get('username') == token.get('author'))
 
-    return app
-
-    # @app.route('/init', methods = ['POST'])
+    # @app.route('/databases', methods = ['GET'])
     # @permission('Administrator')
-    # async def database_init(request: Request) -> json:
-    #     name: str = str(request.json.get('name')) if request.json.get('name') else None
+    # async def databases_list(request: Request) -> json:
+    #     databases: dict[str, any] = config.get('databases')
 
-    #     if not name: return json({ 'error' : 'Name required!' }, status = 400)
+    #     formatted_databases: dict
 
-    #     existed_database: dict[str, any] | None = any((database.get('name') == database_name for database in config.get('databases')), None)
+    @app.route('/create_database', methods = ['POST'])
+    @permission('Administrator')
+    async def create_database(request: Request) -> json:
+        name: str = request.json.get('name')
 
-    #     if existed_database: return json({ 'data' : { 'id' : existed_database.get('id'), 'message': f'Database with name `{name}` already exists' } }, status = 200)
+        if not name: return json({ 'error' : 'Name required!' }, status = 400)
 
-    #     Moonlight(name, author = app_data.get(''))
+        existed_database: dict[str, any] = next((database for database in config.get('databases') if database.get('name') == name), None)
 
-    #     return json({ 'data' : { 'id' : id } }, status = 200)
+        if existed_database: return json({ 'data' : { 'id' : existed_database.get('id'), 'message': f'Database with name `{name}` already exists' } }, status = 200)
+
+        Moonlight(name, author = request.ctx.user.get('username'))
+
+        new_database: dict[str, any] = next((database for database in config.get('databases') if database.get('name') == name), None)
+
+        return json({ 'data' : { 'id' : new_database.get('id') } }, status = 201)
 
     # @app.route('/<database_id:int>/push', methods = ['POST'])
     # @permission('Editor')
@@ -157,7 +163,7 @@ def create_application() -> Sanic:
 
     #     return json({}, status = 200)
     
-    # return app
+    return app
 
 
 # get user
