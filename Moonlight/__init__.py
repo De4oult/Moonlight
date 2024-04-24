@@ -2,12 +2,12 @@
 PACKAGE INFO
 """
 
-from .moonlight  import Moonlight
-from .logger     import Logger
-from .config     import config
-from .tools      import *
-from .paths      import *
-from .cli        import *
-from .api        import create_application
-from .decorators import *
-from .messages   import t
+from .core.moonlight  import Moonlight
+from .core.logger     import Logger
+from .config.config   import config
+from .core.tools      import *
+from .core.paths      import *
+from .cli.cli         import *
+from .api.api         import create_application
+from .cli.decorators  import *
+from .core.messages   import t

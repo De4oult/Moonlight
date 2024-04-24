@@ -18,6 +18,9 @@
         "databases": [],
         "auto_schemas" : false
     },
+    "base_database_data" : {
+        "data" : []
+    },
     "loggers" : [
         "info",
         "success",
@@ -26,5 +29,10 @@
     ],
     "self_admin" : "[MOONLIGHT]",
     "current_locale": "en",
-    "docs" : "Hallo, **welt**!"
+    "docs" : "Hallo, **welt**!",
+    "access_hierarchy"  : {
+        "viewer"        : 1,
+        "editor"        : 2,
+        "administrator" : 3
+    }
 }

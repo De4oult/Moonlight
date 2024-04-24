@@ -8,3 +8,4 @@ InquirerPy
 rich
 loguru
 markdown2
+grip
