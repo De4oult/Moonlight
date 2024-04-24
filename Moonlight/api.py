@@ -35,15 +35,13 @@ def create_application() -> Sanic:
 
         if (not username) or (not password): return json({ 'error' : 'Need username and password' }, status = 401)
 
-        users: list[dict[str, any]] = config.get('users')
-
-        user: dict[str, any] = next((user for user in users if (user.get('username') == username) and user.get('password') == password_hash(password)), None)
+        user: dict[str, any] = next((user for user in config.get('users') if (user.get('username') == username) and user.get('password') == password_hash(password)), None)
         
         if not user: return json({ 'error' : 'Invalid credentials' }, status = 401)
         
-        token_data = Methods.create_token(username)
+        token_data: dict[str, str] = Methods.create_token(username)
 
-        return json(token_data, status = 200)
+        return json({ 'data' : token_data }, status = 200)
 
     @app.middleware('request')
     async def validate_auth(request: Request) -> json:
@@ -52,9 +50,9 @@ def create_application() -> Sanic:
             case '/docs': return
             case _: pass
 
-        user_token = request.headers.get('Authorization')
+        user_token: str = request.headers.get('Authorization')
 
-        token = next((token for token in config.get('api_keys') if token.get('token') == user_token and datetime.fromisoformat(token.get('expires')) > datetime.now()), None)
+        token: dict[str, any] = next((token for token in config.get('api_keys') if token.get('token') == user_token and datetime.fromisoformat(token.get('expires')) > datetime.now()), None)
 
         if not token: return json({ 'error' : 'Invalid or expired token' }, status = 401)
 
@@ -62,26 +60,20 @@ def create_application() -> Sanic:
 
     return app
 
-    @app.route('/init', methods = ['POST'])
-    @permission('Administrator')
-    async def database_init(request: Request) -> json:
-        filename     : str   = str(request.json.get('name'))            if request.json.get('name')          else None
-        primary_key  : str   = str(request.json.get('primary_key'))     if request.json.get('primary_key')   else 'id'
-        show_messages: tuple = tuple(request.json.get('show_messages')) if request.json.get('show_messages') else ('warning', 'error')
+    # @app.route('/init', methods = ['POST'])
+    # @permission('Administrator')
+    # async def database_init(request: Request) -> json:
+    #     name: str = str(request.json.get('name')) if request.json.get('name') else None
 
-        if not filename: return json({ 'description' : 'Name of database required!' }, status = 400)
+    #     if not name: return json({ 'error' : 'Name required!' }, status = 400)
 
-        if await databases.contains('filename', filename): return json({ 'data' : { 'id' : (await databases.get({ 'filename' : filename }))[0].get('id'), 'msg': f'Database with name `{filename}` already exists' } }, status = 200)
+    #     existed_database: dict[str, any] | None = any((database.get('name') == database_name for database in config.get('databases')), None)
 
-        id = await databases.push({
-            'filename'      : filename,
-            'primary_key'   : primary_key, 
-            'show_messages' : show_messages
-        })
+    #     if existed_database: return json({ 'data' : { 'id' : existed_database.get('id'), 'message': f'Database with name `{name}` already exists' } }, status = 200)
 
-        Moonlight(f'{id}.json', primary_key, show_messages)
+    #     Moonlight(name, author = app_data.get(''))
 
-        return json({ 'data' : { 'id' : id } }, status = 200)
+    #     return json({ 'data' : { 'id' : id } }, status = 200)
 
     # @app.route('/<database_id:int>/push', methods = ['POST'])
     # @permission('Editor')
