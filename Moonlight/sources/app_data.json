@@ -21,6 +21,9 @@
     "base_database_data" : {
         "data" : []
     },
+    "api" : {
+        "console_show" : false
+    },
     "loggers" : [
         "info",
         "success",

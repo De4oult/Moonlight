@@ -1,4 +1,6 @@
 from filelock import FileLock
+from typing   import Any
+from enum     import Enum
 
 import json
 
@@ -10,254 +12,307 @@ from Moonlight.core.logger   import Logger, LogLevel
 from Moonlight.core.messages import t
 
 
-def init_database(path: str):
-    if check_path_exist(path): return
+def init_database(path: str) -> None:
+    if check_path_exist(path): return None
 
     with open(path, 'w', encoding = 'utf-8') as database_file: 
         json.dump(app_data.get('base_database_data'), database_file, indent = 4)
 
+class Operations(Enum):
+    PUSH:     str = 'PUSH'
+    ALL:      str = 'ALL'
+    GET:      str = 'GET'
+    UPDATE:   str = 'UPDATE'
+    DELETE:   str = 'DELETE'
+    DROP:     str = 'DROP'
+    CONTAINS: str = 'CONTAINS'
+    LENGTH:   str = 'LENGTH'
+    COUNT:    str = 'COUNT'
+
 class Moonlight:
     '''Moonlight json database class'''
-    def __init__(self, filename: str, author: str = app_data.get('self_admin')) -> None:
+    def __init__(self, filename: str, author: str = app_data.get('self_admin'), console_show: bool = True) -> None:
         '''
         arguments
             - filename (str) <- relative path to database .json-file
             - author   (str) <- creator of database
         '''
-        self.filename: str  = make_database_path(filename)
+        self.filename:  str = make_database_path(filename)
         self.logs_path: str = make_logging_path(filename)
-        self.name: str      = get_filename_from_path(self.filename)
+        self.name:      str = get_filename_from_path(self.filename)
         
         init_database(self.filename)
 
         Methods.create_database(self.name, self.filename, self.logs_path, author)
 
-        self.__primary_key = 'id'
-        self.lock          = FileLock(f'{self.filename}.lock')
+        self.__primary_key: str = 'id'
 
-        self.logger: Logger = Logger(self.logs_path, [LogLevel[level.upper()] for level in config.get('loggers') if level.upper() in LogLevel.__members__]) 
+        self.lock = FileLock(f'{self.filename}.lock')
+
+        self.log_levels: list[LogLevel] = [LogLevel[level.upper()] for level in config.get('loggers') if level.upper() in LogLevel.__members__]
+        self.logger: Logger = Logger(self.logs_path, self.log_levels, console_show) 
         
-        self.logger.write(t('loggers.info', 'database_connect'), LogLevel.INFO)
+        self.logger.write(t('loggers.info.database_connect', name = app_data.get('name')), LogLevel.INFO)
 
     def __get_id(self) -> int:           return int(generate_uuid())
     def __cast_id(self, id: int) -> int: return int(id)
     def __get_load_func(self):           return json.load
     def __get_dump_func(self):           return json.dump
+    def __truncate(self, file) -> None:
+        file.seek(0)
+        file.truncate()
+    
 
-    # Database methods hier
-    async def push(self, data_to_push: dict[str, any]) -> int | None:
+    async def push(self, query: dict[str, Any]) -> int | None:
         '''
-        Adds an object with the given fields to the database
+        `Adds an object with the given fields to the database`
 
         arguments
-            - data_to_push (dict[str, any]) <- the key-value dictionary to be added to the database
+            - query (dict[str, any]) <- the key-value dictionary to be added to the database
 
-        @returns {id: int}.
+        @returns {id: int}
         '''
-        if type(data_to_push) != type({}): 
-            self.logger.write(t('loggers.error', 'must_be_dict', command = 'PUSH', typeof = type(data_to_push)), LogLevel.ERROR)    
-            return
+        if not isinstance(query, dict): 
+            self.logger.write(t('loggers.error.must_be_dict', typeof = type(query), operation = Operations.PUSH.value), LogLevel.ERROR)    
+            return None
         
-        if data_to_push == {}:
-            self.logger.write(t('loggers.error', 'nothing_to_push'), LogLevel.ERROR)
+        if not query:
+            self.logger.write(t('loggers.error.empty_query', operation = Operations.PUSH.value), LogLevel.ERROR)
+            return None
+
+        with self.lock:
+            try:
+                with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
+                    database_data: dict[str, list] = self.__get_load_func()(database_file)
+
+                    identifier: int = self.__get_id()
+                    query: dict[str, Any] = { self.__primary_key : identifier, **query }
+
+                    database_data['data'].append(query)
+
+                    self.__truncate(database_file)
+
+                    self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
+
+                    self.logger.write(t('loggers.success.completed', result = query, operation = Operations.PUSH.value), LogLevel.SUCCESS)
+
+                    return identifier
             
-            return
+            except Exception as error:
+                self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.PUSH.value), LogLevel.ERROR)
+                return None
 
-        with self.lock:
-            with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
-                database_data: dict[str, any] = self.__get_load_func()(database_file)
-
-                data_to_push = { self.__primary_key : self.__get_id() } | data_to_push
-
-                database_data['data'].append(data_to_push)
-                database_file.seek(0)
-                self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
-
-                self.logger.write(t('loggers.success', 'pushed', data = data_to_push), LogLevel.SUCCESS)
-
-                return data_to_push.get(self.__primary_key)
-
-    async def all(self) -> list[dict[str, any]]:
+    async def all(self) -> list[dict[str, Any] | None]:
         '''
-        Get all objects from the database
+        `Get all objects from the database`
 
-        @returns {all_objects: list[dict[str, any]]}.
+        @returns {all_objects: list[dict[str, any]]}
         '''
         with self.lock:
-            with open(self.filename, 'r', encoding = 'utf-8') as database_file:
-                self.logger.write(t('loggers.success', 'get_all'), LogLevel.SUCCESS)
+            try: 
+                with open(self.filename, 'r', encoding = 'utf-8') as database_file:
+                    database_data: dict[str, list] = self.__get_load_func()(database_file)
+                    data: list[dict[str, Any]]     = database_data.get('data', [])
+                    
+                    self.logger.write(t('loggers.success.get_all', operation = Operations.ALL.value), LogLevel.SUCCESS)
+                    
+                    return data
                 
-                return self.__get_load_func()(database_file).get('data')
-            
-    async def get(self, query: dict[str, any]) -> list[dict[str, any]] | list | None:
+            except Exception as error:
+                self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.ALL.value), LogLevel.ERROR)
+                return []
+
+    async def get(self, query: dict[str, Any]) -> list[dict[str, Any] | None] | None:
         '''
-        Get object/s from the database by query
+        `Get object/s from the database by query`
 
         arguments
             - query (dict[str, any]) <- the key-value dictionary to find in database
 
-        @returns {object/s: list[dict[str, any]]}.
+        @returns {object/s: list[dict[str, any]]}
         '''
         if not isinstance(query, dict): 
-            self.logger.write(t('loggers.error', 'must_be_dict', command = 'GET', typeof = type(query)), LogLevel.ERROR)    
-            return
+            self.logger.write(t('loggers.error.must_be_dict', typeof = type(query), operation = Operations.GET.value), LogLevel.ERROR)    
+            return None
         
-        if query == {}:
-            self.logger.write(t('loggers.error', 'empty_query'), LogLevel.ERROR)
-            
-            return
+        if not query:
+            self.logger.write(t('loggers.error.empty_query', operation = Operations.GET.value), LogLevel.ERROR)
+            return None
 
         with self.lock:
-            with open(self.filename, 'r', encoding = 'utf-8') as database_file:
-                database_data = self.__get_load_func()(database_file)
+            try:
+                with open(self.filename, 'r', encoding = 'utf-8') as database_file:
+                    database_data: dict[str, list] = self.__get_load_func()(database_file)
 
-                result: list = []
-                
-                for data in database_data.get('data'):
-                    if all((x in data) and (data[x] == query[x]) for x in query): result.append(data)
+                    result: list = [data for data in database_data.get('data', []) if all(data.get(key) == value for key, value in query.items())]
+                    
+                    if not result: self.logger.write(t('loggers.warning.no_matches', query = query,   operation = Operations.GET.value), LogLevel.WARNING)
+                    else:          self.logger.write(t('loggers.success.completed',  result = result, operation = Operations.GET.value), LogLevel.SUCCESS)
 
-                if result == []:
-                    self.logger.write(t('loggers.error', 'no_result', query = query), LogLevel.WARNING)
-                    return []
-
-                self.logger.write(t('loggers.success', 'get', result = result), LogLevel.SUCCESS)
-
-                return result
+                    return result
             
-    async def update(self, data_to_update: dict[str, any]) -> None | int:
+            except Exception as error:
+                self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.GET.value), LogLevel.ERROR)
+                return None
+
+    async def update(self, query: dict[str, Any]) -> None | int:
         '''
-        Update object in the database
+        `Update object in the database`
 
         arguments
             - data_to_update (dict[str, any]) <- the key-value dictionary to change in object in database (`id` in `data_to_update` required!)
 
-        @returns {id: int}.
+        @returns {id: int}
         '''
-        if type(data_to_update) != type({}): 
-            self.logger.write(t('loggers.error', 'must_be_dict', command = 'UPDATE', typeof = type(data_to_update)), LogLevel.ERROR)    
-
-            return
+        if not isinstance(query, dict): 
+            self.logger.write(t('loggers.error.must_be_dict', typeof = type(query), operation = Operations.UPDATE.value), LogLevel.ERROR)    
+            return None
         
-        if not data_to_update.get(self.__primary_key): 
-            self.logger.write(t('loggers.error', 'id_not_specified', data = data_to_update), LogLevel.ERROR)
-
-            return
+        if self.__primary_key not in query: 
+            self.logger.write(t('loggers.error.id_not_specified', query = query, operation = Operations.UPDATE.value), LogLevel.ERROR)
+            return None
         
         with self.lock:
-            with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
-                database_data = self.__get_load_func()(database_file)
-                result: list  = []
-                updated: bool = False
+            try:
+                with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
+                    database_data: dict[str, list] = self.__get_load_func()(database_file)
+                    data: list[dict[str, Any]]     = database_data.get('data', [])
 
-                for data in database_data.get('data'):
-                    if data.get(self.__primary_key) == self.__cast_id(data_to_update.get(self.__primary_key)):
-                        data.update(data_to_update)
-                        updated = True
+                    updated: bool = False
 
-                    result.append(data)
+                    for index, item in enumerate(data):
+                        if item.get(self.__primary_key) == self.__cast_id(query.get(self.__primary_key)):
+                            data[index].update(query)
+                            updated = True
 
-                if not updated:
-                    self.logger.write(t('loggers.error', 'nothing_to_update', query = data_to_update), LogLevel.ERROR)
-                    
-                    return
+                    print(updated)
 
-                database_data['data'] = result
-                database_file.seek(0)
-                database_file.truncate()
+                    if not updated:
+                        self.logger.write(t('loggers.error.nothing_to_update', query = query, operation = Operations.UPDATE.value), LogLevel.ERROR)
+                        return None
 
-                self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
+                    self.__truncate(database_file)
 
-                self.logger.write(t('loggers.success', 'updated', result = result), LogLevel.SUCCESS)
+                    self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
 
-                return data_to_update.get(self.__primary_key)
+                    print('ok')
 
-    async def delete(self, id: int) -> dict[str, any]:
+                    self.logger.write(t('loggers.success.completed', result = query, operation = Operations.UPDATE.value), LogLevel.SUCCESS)
+
+                    return query.get(self.__primary_key)
+                
+            except Exception as error:
+                self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.UPDATE.value), LogLevel.ERROR)
+                return None
+
+    async def delete(self, id: int) -> dict[str, Any] | None:
         '''
-        Remove object from the database
+        `Remove object from the database`
 
         arguments
             - id (int) <- primary key of object in database to delete
 
-        @returns {object: dict[str, any]}.
+        @returns {object: dict[str, any]}
         '''
+        if not isinstance(id, int):
+            self.logger.write(t('loggers.error.id_must_be_int', id = id, operation = Operations.DELETE.value), LogLevel.ERROR)
+            return None
+
         with self.lock:
-            with open(self.filename, 'r+', encoding='utf-8') as database_file:
-                database_data = self.__get_load_func()(database_file)
-                data_list = database_data.get('data')
-                deleted_data = next((item for item in data_list if item.get(self.__primary_key) == self.__cast_id(id)), None)
+            try:
+                with open(self.filename, 'r+', encoding = 'utf-8') as database_file:
+                    database_data: dict[str, list] = self.__get_load_func()(database_file)
+                    data: list[dict[str, Any]]     = database_data.get('data', [])
 
-                if not deleted_data:
-                    self.logger.write(t('loggers.error', 'id_not_found', id = id), LogLevel.ERROR)
-                    return None
-                
-                database_data['data'] = [item for item in data_list if item.get(self.__primary_key) != self.__cast_id(id)]
-                database_file.seek(0)
-                database_file.truncate()
-                self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
-                self.logger.write(t('loggers.success', 'deleted', id = id), LogLevel.SUCCESS)
-                return deleted_data
+                    deleted_item: dict[str, Any] | None = next((item for item in data if item.get(self.__primary_key) == self.__cast_id(id)), None)
 
+                    if not deleted_item:
+                        self.logger.write(t('loggers.error.id_not_found', id = id, operation = Operations.DELETE.value), LogLevel.ERROR)
+                        return None
+                    
+                    database_data['data'] = [item for item in data if item.get(self.__primary_key) != self.__cast_id(id)]
+                    
+                    self.__truncate(database_file)
+                    
+                    self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
+                    
+                    self.logger.write(t('loggers.success.deleted', id = id, operation = Operations.DELETE.value), LogLevel.SUCCESS)
+                    
+                    return deleted_item
+            
+            except Exception as error:
+                self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.DELETE.value), LogLevel.ERROR)
+                return None
             
     async def drop(self) -> None:
-        '''
-        Removes database file
-        '''
-        self.logger.write(t('loggers.info', 'database_drop'), LogLevel.INFO)
-        self.logger.stop()
+        '''`Removes database file`'''
+        try:
+            self.lock.acquire()
+            self.logger.stop()
 
-        Methods.delete_database(get_filename_from_path(self.filename), self.filename, self.logs_path)
+            Methods.delete_database(self.name, self.filename, self.logs_path)
+            
+            self.logger.write(t('loggers.info.database_drop', operation = Operations.DROP.value), LogLevel.INFO)
+                
+        except Exception as error:
+            self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.DROP.value), LogLevel.ERROR)
 
+        finally:
+            self.lock.release()
 
-    # Tools
-    async def contains(self, key: str, value: any) -> bool:
+    async def contains(self, key: str, value: Any) -> bool:
         '''
-        Checks if database contains `key` where `value`
+        `Checks if database contains key where value`
 
         arguments
             - key   (str)
             - value (any)
 
-        @returns {contains: bool}.
+        @returns {contains: bool}
         '''
-        query = { key : value}
-        
-        with self.lock:
-            with open(self.filename, 'r', encoding = 'utf-8') as database_file:
-                database_data = self.__get_load_func()(database_file)
-                
-                for data in database_data.get('data'):
-                    if all((x in data) and (data[x] == query[x]) for x in query): return True
+        try:
+            with self.lock:
+                with open(self.filename, 'r', encoding = 'utf-8') as database_file:
+                    database_data: dict[str, list] = self.__get_load_func()(database_file)
+                    data: list[dict[str, Any]]     = database_data.get('data', [])
 
-                return False
+                    return any(record.get(key) == value for record in data)
+        
+        except Exception as error:
+            self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.CONTAINS.value), LogLevel.ERROR)
+            return False
     
     async def length(self) -> int:
         '''
-        Returns count of objects in database
+        `Returns count of objects in database`
 
-        @returns {length: int}.
+        @returns {length: int}
         '''
-        return len(await self.all())
+        try:
+            return len(await self.all())
+        
+        except Exception as error:
+            self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.LENGTH.value), LogLevel.ERROR)
+            return 0
 
-    async def count(self, key: str, value: any) -> int:
+    async def count(self, key: str, value: Any) -> int:
         '''
-        Returns count of objects in database where `key` is `value`
+        `Returns count of objects in database where key is value`
 
         arguments
             - key   (str)
             - value (any)
 
-        @returns {count: int}.
+        @returns {count: int}
         '''
-        query = { key : value}
-        
-        with self.lock:
-            with open(self.filename, 'r', encoding = 'utf-8') as database_file:
-                database_data = self.__get_load_func()(database_file)
+        try:
+            with self.lock:
+                with open(self.filename, 'r', encoding = 'utf-8') as database_file:
+                    database_data: dict[str, list] = self.__get_load_func()(database_file)
+                    data: list[dict[str, Any]]     = database_data.get('data', [])
 
-                count: int = 0
+                    return sum(1 for record in data if data.get(key) == value) 
                 
-                for data in database_data.get('data'):
-                    if all((x in data) and (data[x] == query[x]) for x in query):
-                        count += 1
-
-                return count
+        except Exception as error:
+            self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.COUNT.value), LogLevel.ERROR)
+            return 0

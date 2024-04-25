@@ -75,7 +75,7 @@ def create_application() -> Sanic:
 
         if existed_database: return json({ 'data' : { 'id' : existed_database.get('id'), 'message': f'Database with name `{name}` already exists' } }, status = 200)
 
-        Moonlight(name, author = request.ctx.user.get('username'))
+        Moonlight(name, author = request.ctx.user.get('username'), console_show = app_data.get('api').get('console_show'))
 
         new_database: dict[str, any] = next((database for database in config.get('databases') if database.get('name') == name), None)
 
