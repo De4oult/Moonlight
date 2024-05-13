@@ -14,7 +14,7 @@ from Moonlight.core.moonlight import Moonlight
 from Moonlight.core.methods   import Methods
 from Moonlight.core.moonfile  import Moonfile
 from Moonlight.core.tools     import is_file_exist
-from Moonlight.core.paths     import make_moonfile_path
+from Moonlight.config.paths   import make_moonfile_path
 
 import asyncio
 import click
@@ -26,7 +26,7 @@ def serve() -> None:
     users: list[dict] = config.get('users')
 
     if not next((user.get('permissions') == 'administrator' for user in users), None):
-        console.print(t('errors.user', 'need_admin'), style = 'bold red')
+        console.print(t('errors.user.need_admin'), style = 'bold red')
         return
 
     loader: AppLoader = AppLoader(factory = partial(create_application))
@@ -49,7 +49,7 @@ def configure() -> None:
     if is_file_exist(make_moonfile_path(app_data.get('moonfile'))):
         use_moonfile: bool = prompt({
             'type'    : 'confirm',
-            'message' : t('prompt.confirm', 'use_moonfile'),
+            'message' : t('prompt.confirm.use_moonfile'),
             'name'    : 'use_moonfile',
             'default' : False
         }).get('use_moonfile')
@@ -59,19 +59,19 @@ def configure() -> None:
             moonfile.parse_config()
             moonfile.compile()
 
-            console.print('\n' + t('success.application', 'configured'), style = 'bold green')
+            console.print('\n' + t('success.application.configured'), style = 'bold green')
             return
 
     host = prompt({
         'type'    : 'input',
-        'message' :  t('prompt.enter', 'host'),
+        'message' :  t('prompt.enter.host'),
         'name'    : 'host',
         'default' : '127.0.0.1'
     }).get('host')
 
     port = prompt({
         'type'     : 'input',
-        'message'  :  t('prompt.enter', 'port'),
+        'message'  :  t('prompt.enter.port'),
         'name'     : 'port',
         'default'  : '3000',
         'validate' : NumberValidator()
@@ -79,20 +79,20 @@ def configure() -> None:
 
     loggers = prompt({
         'type'    : 'checkbox',
-        'message' : t('prompt.select', 'loggers'),
+        'message' : t('prompt.select.loggers'),
         'choices' : ['Info', 'Success', 'Warning', 'Error'],
         'name'    : 'loggers'
     }).get('loggers')
 
     Methods.configure(host, port, loggers)
 
-    console.print('\n' + t('success.application', 'configured'), style = 'bold green')
+    console.print('\n' + t('success.application.configured'), style = 'bold green')
 
 @click.command()
 def locale() -> None:
     locale = prompt({
         'type'    : 'list',
-        'message' : t('prompt.select', 'locale'),
+        'message' : t('prompt.select.locale'),
         'choices' : app_data.get('locales'),
         'name'    : 'locale'
     }).get('locale')
@@ -105,80 +105,80 @@ def create_user() -> None:
 
     username = prompt({
         'type'    : 'input',
-        'message' :  t('prompt.enter', 'username'),
+        'message' :  t('prompt.enter.username'),
         'name'    : 'username'
     }).get('username')
 
     if any(user.get('username') == username for user in users):
-        console.print(t('errors.user', 'already_exist', username = username))
+        console.print(t('errors.user.already_exist', username = username))
         return
 
     password = prompt({
         'type'    : 'password',
-        'message' : t('prompt.enter', 'password'),
+        'message' : t('prompt.enter.password'),
         'name'    : 'password'
     }).get('password')
 
     permissions = prompt({
         'type'    : 'list',
-        'message' : t('prompt.select', 'permissions', username = username),
-        'choices' : [t('permissions', 'viewer'), t('permissions', 'editor'), t('permissions', 'admin')],
+        'message' : t('prompt.select.permissions', username = username),
+        'choices' : [t('permissions.viewer'), t('permissions.editor'), t('permissions.admin')],
         'name'    : 'permissions'
     }).get('permissions')
         
     Methods.create_user(username, password, permissions)
     
-    console.print(t('success.user', 'created'))
+    console.print(t('success.user.created'))
 
 @click.command()
 def delete_user() -> None:
     users = config.get('users')
 
     if len(users) == 0:
-        console.print(t('errors.user', 'no_one'))
+        console.print(t('errors.user.no_one'))
         return
 
     username = prompt({
         'type'    : 'list',
-        'message' : t('prompt.select', 'user'),
+        'message' : t('prompt.select.user'),
         'choices' : [user.get('username') for user in users],
         'name'    : 'username'
     }).get('username')
 
     if username == app_data.get('self_admin'):
-        console.print(t('errors.user', 'self_admin', self_admin_name = username), style = 'bold red')
+        console.print(t('errors.user.self_admin', self_admin_name = username), style = 'bold red')
         return
 
     proceed = prompt({
         'type'    : 'confirm',
-        'message' : t('prompt.confirm', 'delete_user', username = username),
+        'message' : t('prompt.confirm.delete_user', username = username),
         'name'    : 'proceed',
         'default' : False
     }).get('proceed')
 
     if not proceed: 
-        console.print(t('prompt', 'cancel'))
+        console.print(t('prompt.cancel'))
         return
 
     Methods.delete_user(username)
-    console.print(t('success.user', 'deleted'))
+    console.print(t('success.user.deleted'))
 
 @click.command()
 @auth_cli('administrator')
 def create_database(username: str) -> None:
     database_name = prompt({
         'type'    : 'input',
-        'message' :  t('prompt.enter', 'database_name'),
+        'message' :  t('prompt.enter.database_name'),
         'name'    : 'database_name'
     }).get('database_name')
     
     if any(database.get('name') == database_name for database in config.get('databases')):
-        console.print('\n' + t('errors.database', 'already_exist', database_name = database_name), style = 'bold red')
+        console.print('\n' + t('errors.database.already_exist', database_name = database_name), style = 'bold red')
         return
 
     Moonlight(database_name, username)
 
-    console.print('\n' + t('success.database', 'created'), style = 'bold green')
+    console.print('\n' + t('success.database.created'), style = 'bold green')
 
 @click.command()
 @auth_cli('administrator')
@@ -186,12 +186,12 @@ def delete_database(username: str) -> None:
     databases: list[dict] = config.get('databases')
 
     if len(databases) == 0:
-        console.print('\n' + t('errors.database', 'no_one'), style = 'bold red')
+        console.print('\n' + t('errors.database.no_one'), style = 'bold red')
         return
 
     database_name = prompt({
         'type'    : 'list',
-        'message' : t('prompt.select', 'database'),
+        'message' : t('prompt.select.database'),
         'choices' : [database.get('name') for database in databases],
         'name'    : 'database_name'
     }).get('database_name')
@@ -199,18 +199,18 @@ def delete_database(username: str) -> None:
     database_to_delete = next((database for database in databases if database.get('name') == database_name), None)
 
     if database_to_delete.get('author') not in (username, app_data.get('self_admin')):
-        console.print('\n' + t('errors.database', 'not_author', database_name = database_name), style = 'bold red')
+        console.print('\n' + t('errors.database.not_author', database_name = database_name), style = 'bold red')
         return
 
     proceed = prompt({
         'type'    : 'confirm',
-        'message' : t('prompt.confirm', 'delete_database', database_name = database_name),
+        'message' : t('prompt.confirm.delete_database', database_name = database_name),
         'name'    : 'proceed',
         'default' : False
     }).get('proceed')
 
     if not proceed: 
-        console.print(t('prompt', 'cancel'))
+        console.print(t('prompt.cancel'))
         return
 
     database = Moonlight(database_name)
@@ -219,27 +219,27 @@ def delete_database(username: str) -> None:
 
     Methods.delete_database(database_name, database.filename, database.logs_path)
     
-    console.print('\n' + t('success.database', 'deleted'), style = 'bold green')
+    console.print('\n' + t('success.database.deleted'), style = 'bold green')
 
 @click.command()
 def databases() -> None:
     databases: list[dict] = config.get('databases')
 
     if len(databases) == 0:
-        console.print('\n' + t('errors.database', 'no_one'), style = 'bold red')
+        console.print('\n' + t('errors.database.no_one'), style = 'bold red')
         return
 
     table = Table(
-        title = t('tables.databases', 'title'), 
+        title = t('tables.databases.title'), 
         expand = True,
         show_lines = True,
         padding = 1
     )
 
-    table.add_column(t('tables.databases', 'id'),         justify = 'center', style = 'cyan')
-    table.add_column(t('tables.databases', 'name'),       justify = 'center', style = 'bold green')
-    table.add_column(t('tables.databases', 'author'),     justify = 'center', style = 'yellow')
-    table.add_column(t('tables.databases', 'created_at'), justify = 'center', style = 'magenta')
+    table.add_column(t('tables.databases.id'),         justify = 'center', style = 'cyan')
+    table.add_column(t('tables.databases.name'),       justify = 'center', style = 'bold green')
+    table.add_column(t('tables.databases.author'),     justify = 'center', style = 'yellow')
+    table.add_column(t('tables.databases.created_at'), justify = 'center', style = 'magenta')
 
     for database in databases:
         table.add_row(
@@ -257,12 +257,12 @@ def database(username: str) -> None:
     databases: list[dict] = config.get('databases')
 
     if len(databases) == 0:
-        console.print('\n' + t('errors.database', 'no_one'), style = 'bold red')
+        console.print('\n' + t('errors.database.no_one'), style = 'bold red')
         return
 
     database_name = prompt({
         'type'    : 'list',
-        'message' : t('prompt.select', 'database'),
+        'message' : t('prompt.select.database'),
         'choices' : [database.get('name') for database in databases],
         'name'    : 'database_name'
     }).get('database_name')
@@ -279,7 +279,7 @@ def database(username: str) -> None:
     data_to_show = asyncio.run(Moonlight(database_to_show.get('name')).all())
 
     if len(data_to_show) == 0:
-        console.print('\n' + t('info.database', 'empty'), style = 'blue')
+        console.print('\n' + t('info.database.empty'), style = 'blue')
         return
 
     columns = ['id'] + sorted({ key for data in data_to_show for key in data.keys() if key != 'id' })

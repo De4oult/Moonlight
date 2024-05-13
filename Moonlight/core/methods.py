@@ -32,7 +32,9 @@ class Methods:
     @staticmethod
     def create_database(database_name: str, path: str, logs_path: str, author: str) -> dict[str, Any] | None:
         '''`Creates the database on behalf of the user passed in the {author} argument`'''
-        if any(database.get('name') == database_name for database in config.get('databases')): return None
+        database: dict[str, Any] = next((database for database in config.get('databases') if database.get('name') == database_name), None)
+
+        if database: return database
         
         database_info: dict[str, Any] = {
             'id'         : int(generate_uuid()),

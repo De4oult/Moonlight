@@ -2,7 +2,7 @@ from enum import Enum
 
 import json
 
-from Moonlight.core.paths    import make_locale_path
+from Moonlight.config.paths  import make_locale_path
 from Moonlight.config.config import app_data
 
 

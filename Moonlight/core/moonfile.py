@@ -1,6 +1,6 @@
 from rich.console import Console
 
-from Moonlight.core.paths     import make_moonfile_path
+from Moonlight.config.paths   import make_moonfile_path
 from Moonlight.config.config  import app_data, config
 from Moonlight.core.moonlight import Moonlight
 from Moonlight.core.methods   import Methods

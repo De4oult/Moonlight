@@ -1,4 +1,4 @@
-from Moonlight.core.paths import conf_path, data_path
+from Moonlight.config.paths import conf_path, data_path
 
 import json
 import os

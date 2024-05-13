@@ -5,7 +5,7 @@ from enum     import Enum
 import json
 
 from Moonlight.core.tools    import check_path_exist, get_filename_from_path, generate_uuid
-from Moonlight.core.paths    import make_database_path, make_logging_path
+from Moonlight.config.paths  import make_database_path, make_logging_path
 from Moonlight.config.config import config, app_data
 from Moonlight.core.methods  import Methods
 from Moonlight.core.logger   import Logger, LogLevel
