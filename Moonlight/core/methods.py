@@ -35,7 +35,7 @@ class Methods:
         if any(database.get('name') == database_name for database in config.get('databases')): return None
         
         database_info: dict[str, Any] = {
-            'id'         : generate_uuid(),
+            'id'         : int(generate_uuid()),
             'name'       : database_name,
             'path'       : path,
             'logs_path'  : logs_path,

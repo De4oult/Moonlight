@@ -43,6 +43,7 @@ class Moonfile:
                     case 'LOG':         self.set_logging(*args)
                     case 'CREATE_USER': self.create_user(*args)
                     case 'DATABASE':    self.create_database(*args)
+                    case 'MQ':          self.create_messages_queue(*args)
                     case '?':           continue
                     case 'IGNORE':      self.ignore = True
                     case _:             console.print(t('warnings.moonfile', 'undefined_command', command = command), style = Style.WARNING.value)
@@ -126,6 +127,9 @@ class Moonfile:
                 return
             
         self.databases.append({ 'name': name, 'author': author })
+
+    def create_messages_queue(self, *args) -> None:
+        pass
 
     def compile(self) -> None:
         '''`Compiles and applies the settings defined in the Moonfile`'''

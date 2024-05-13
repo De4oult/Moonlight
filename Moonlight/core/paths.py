@@ -14,6 +14,8 @@ locales_path:   str = join(head_path, 'locales')
 conf_path: str = join(exec_path, 'config.json')
 data_path: str = join(head_path, 'sources', 'app_data.json')
 
+docs_moonlight_path: str = join(head_path, 'sources', 'moonlight_api_documentation.md')
+
 def make_database_path(filename: str) -> str:
     '''Creates the full path to the database file based on the file name'''
     return join(databases_path, add_ext(get_filename_from_path(filename), '.json'))

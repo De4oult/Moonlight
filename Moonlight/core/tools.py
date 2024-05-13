@@ -53,14 +53,3 @@ def check_path_exist(path: str) -> bool:
     os.makedirs(os.path.dirname(path), exist_ok = True)
     
     return False
-
-
-
-
-
-
-
-
-
-
-

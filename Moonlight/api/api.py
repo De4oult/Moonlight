@@ -1,36 +1,31 @@
 from sanic          import Sanic, Request
 from sanic.response import json, html
-from sanic_cors     import CORS
 from datetime       import datetime
-from markdown2      import markdown
+from sanic_cors     import CORS
 
-from Moonlight.core.moonlight import Moonlight
-from Moonlight.config.config  import config, app_data
-from Moonlight.core.tools     import password_hash
-from Moonlight.api.decorators import permission, required_fields
-from Moonlight.core.methods   import Methods
+from Moonlight.api.decorators       import permission, required_fields
+from Moonlight.config.config        import config, app_data
+from Moonlight.core.tools           import password_hash
+from Moonlight.config.documentation import read_docs
+from Moonlight.core.paths           import docs_moonlight_path
+from Moonlight.core.moonlight       import Moonlight
+from Moonlight.core.methods         import Methods
 
 def create_application() -> Sanic:
     app: Sanic = Sanic('Moonlight')
 
     CORS(app)
 
-    @app.route('/docs', methods = ['GET'])
-    async def database_docs(request: Request) -> html:
-        markdown_docs: str = app_data.get('docs')
-
+    @app.route('/moonlight/docs', methods = ['GET'])
+    async def moonlight_docs(request: Request) -> html:
         return html(
-            f'''
-            <div style="text-align: center;">
-                {markdown(markdown_docs)}
-            </div>
-            ''',
+            await read_docs(docs_moonlight_path),
             status = 200
         )
 
     @app.route('/auth', methods = ['POST'])
     @required_fields('username', 'password')
-    async def database_auth(request: Request) -> json:
+    async def auth(request: Request) -> json:
         username: str = request.json.get('username')
         password: str = request.json.get('password')
 
@@ -45,8 +40,8 @@ def create_application() -> Sanic:
     @app.middleware('request')
     async def validate_auth(request: Request) -> json:
         match request.path:
-            case '/auth': return
-            case '/docs': return
+            case '/auth':           return
+            case '/moonlight/docs': return
             case _: pass
 
         user_token: str = request.headers.get('Authorization')
@@ -64,105 +59,53 @@ def create_application() -> Sanic:
 
     #     formatted_databases: dict
 
-    @app.route('/create_database', methods = ['POST'])
+    @app.route('/moonlight/create', methods = ['GET'])
     @permission('Administrator')
-    async def create_database(request: Request) -> json:
-        name: str = request.json.get('name')
+    async def moonlight_create(request: Request) -> json:
+        name: str = request.args.get('name')
 
         if not name: return json({ 'error' : 'Name required!' }, status = 400)
 
         existed_database: dict[str, any] = next((database for database in config.get('databases') if database.get('name') == name), None)
 
-        if existed_database: return json({ 'data' : { 'id' : existed_database.get('id'), 'message': f'Database with name `{name}` already exists' } }, status = 200)
+        if existed_database: return json({ 'data' : { 'id' : existed_database.get('id'), 'message': f'Database with name `{name}` already exists' } }, status = 409)
 
-        Moonlight(name, author = request.ctx.user.get('username'), console_show = app_data.get('api').get('console_show'))
+        database: Moonlight = Moonlight(name, author = request.ctx.user.get('username'), console_show = app_data.get('api').get('console_show'))
 
-        new_database: dict[str, any] = next((database for database in config.get('databases') if database.get('name') == name), None)
+        return json({ 'data' : { 'id' : database.database_id } }, status = 201)
 
-        return json({ 'data' : { 'id' : new_database.get('id') } }, status = 201)
+    @app.route('/moonlight/<database_id:int>/push', methods = ['POST'])
+    @permission('Editor')
+    async def moonlight_push(request: Request, database_id: int) -> json:
+        pass
 
-    # @app.route('/<database_id:int>/push', methods = ['POST'])
-    # @permission('Editor')
-    # async def database_push(request: Request, database_id: int) -> json:
-    #     databaseExist = (await databases.get({ 'id' : int(database_id) }))
+    @app.route('/moonlight/<database_id:int>/all', methods = ['GET'])
+    @permission('Viewer')
+    async def moonlight_all(request: Request, database_id: int) -> json:
+        pass
 
-    #     if not databaseExist: return json({ 'description' : 'No database exists!' }, status = 400)
+    @app.route('/moonlight/<database_id:int>/get', methods = ['POST'])
+    @permission('Viewer')
+    async def moonlight_get(request: Request, database_id: int) -> json:
+        pass
 
-    #     id = await Moonlight(database_id).push(request.json)
+    @app.route('/moonlight/<database_id:int>/update', methods = ['POST'])
+    @permission('Editor')
+    async def moonlight_update(request: Request, database_id: int) -> json:
+        pass
 
-    #     return json({ 'data' : { 'id' : id } }, status = 200)
+    @app.route('/moonlight/<database_id:int>/delete', methods = ['GET'])
+    @permission('Editor')
+    async def moonlight_delete(request: Request, database_id: int) -> json:
+        id: str = request.args.get('id')
 
-    # @app.route('/<database_id:int>/all', methods = ['GET'])
-    # @permission('Viewer')
-    # async def database_all(request: Request, database_id: int) -> json:
-    #     databaseExist = (await databases.get({ 'id' : int(database_id) }))
+        pass
 
-    #     if not databaseExist: return json({ 'description' : 'No database exists!' }, status = 400)
-        
-    #     data = await Moonlight(database_id).all()
+    @app.route('/moonlight/<id:int>/drop', methods = ['GET'])
+    @permission('Administrator')
+    async def moonlight_drop(request: Request, id: int) -> json:
+        pass
 
-    #     return json({ 'data' : data }, status = 200)
-
-    # @app.route('/<database_id:int>/get', methods = ['POST'])
-    # @permission('Viewer')
-    # async def database_get(request: Request, database_id: int) -> json:
-    #     databaseExist = (await databases.get({ 'id' : int(database_id) }))
-
-    #     if not databaseExist:
-    #         return json({
-    #             'status' : 500,
-    #             'description' : 'No database exists!'
-    #         })
-        
-    #     data = await Moonlight(database_id).get(request.json)
-
-    #     return json({ 'data' : data }, status = 200)
-
-    # @app.route('/<database_id:int>/update', methods = ['POST'])
-    # @permission('Editor')
-    # async def database_update(request: Request, database_id: int) -> json:
-    #     databaseExist = (await databases.get({ 'id' : int(database_id) }))
-
-    #     if not databaseExist:
-    #         return json({
-    #             'status'      : 500,
-    #             'description' : 'No database exists!'
-    #         })
-        
-    #     if not request.json.get('id'):
-    #         return json({
-    #             'status'      : 500,
-    #             'description' : 'No `id` specified!'
-    #         })
-
-    #     data = await Moonlight(database_id).update(request.json)
-
-    #     return json({ 'data' : data }, status = 200)
-
-    # @app.route('/<database_id:int>/delete', methods = ['POST'])
-    # @permission('Editor')
-    # async def database_delete(request: Request, database_id: int) -> json:
-    #     databaseExist = (await databases.get({ 'id' : int(database_id) }))
-
-    #     if not databaseExist: return json({ 'description' : 'No database exists!' }, status = 400)
-
-    #     data = await Moonlight(database_id).delete(request.json.get('id'))
-
-    #     return json({ 'data' : data }, status = 200)
-
-    # @app.route('/<database_id:int>/drop', methods = ['GET'])
-    # @permission('Administrator')
-    # async def database_drop(request: Request, database_id: int) -> json:
-    #     databaseExist = (await databases.get({ 'id' : int(database_id) }))
-
-    #     if not databaseExist: return json({ 'description' : 'No database exists!' }, status = 400)
-
-    #     await databases.delete(database_id)
-        
-    #     await Moonlight(database_id).drop()
-
-    #     return json({}, status = 200)
-    
     return app
 
 

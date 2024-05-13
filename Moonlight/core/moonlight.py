@@ -43,7 +43,7 @@ class Moonlight:
         
         init_database(self.filename)
 
-        Methods.create_database(self.name, self.filename, self.logs_path, author)
+        self.database_id: int = Methods.create_database(self.name, self.filename, self.logs_path, author).get('id')
 
         self.__primary_key: str = 'id'
 
