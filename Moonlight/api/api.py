@@ -57,9 +57,11 @@ def create_application() -> Sanic:
     @app.route('/moonlight/databases', methods = ['GET'])
     @permission('Administrator')
     async def databases_list(request: Request) -> HTTPResponse:
+        databases: list[dict[str, Any]] = config.get('databases')
+
         return json({ 
             'data' : {
-                'databases' : config.get('databases')
+                'databases' : databases
             }
         }, status = ResponseCodes['OK'].value)
                      

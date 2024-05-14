@@ -53,10 +53,10 @@ def required_arguments(*arguments):
             empty_arguments:   list[str] = []
 
             for argument in arguments:
-                if argument not in request.json:
+                if argument not in request.args:
                     missing_arguments.append(argument)
                 
-                elif not request.json.get(argument, None):
+                elif not request.args.get(argument, None):
                     empty_arguments.append(argument)
 
             if missing_arguments: return json({ 'message' : 'Required arguments are not specified', 'missing_arguments' : missing_arguments }, status = ResponseCodes['BAD_REQUEST'].value)
