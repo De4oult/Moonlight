@@ -28,6 +28,8 @@ def required_fields(*fields):
             missing_fields: list[str] = []
             empty_fields:   list[str] = []
 
+            if not request.json: return json({ 'message' : 'The request body must contain data in json format.', 'missing_fields' : fields }, status = ResponseCodes['BAD_REQUEST'].value)
+
             for field in fields:
                 if field not in request.json:
                     missing_fields.append(field)
@@ -35,8 +37,8 @@ def required_fields(*fields):
                 elif not request.json.get(field, None):
                     empty_fields.append(field)
 
-            if missing_fields: return json({ 'message' : 'Required fields are not specified', 'missing_fields': missing_fields }, status = ResponseCodes['BAD_REQUEST'].value)
-            if empty_fields:   return json({ 'message' : 'Some fields are empty', 'empty_fields' : empty_fields },                status = ResponseCodes['BAD_REQUEST'].value)
+            if missing_fields: return json({ 'message' : 'Required fields are not specified', 'missing_fields' : missing_fields }, status = ResponseCodes['BAD_REQUEST'].value)
+            if empty_fields:   return json({ 'message' : 'Some fields are empty',             'empty_fields'   : empty_fields },   status = ResponseCodes['BAD_REQUEST'].value)
 
             return await func(request, *args, **kwargs)
         
