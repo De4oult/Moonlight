@@ -160,7 +160,7 @@ class Moonlight:
         `Update object in the database`
 
         arguments
-            - data_to_update (dict[str, any]) <- the key-value dictionary to change in object in database (`id` in `data_to_update` required!)
+            - query (dict[str, any]) <- the key-value dictionary to change in object in database (`id` in `query` required!)
 
         @returns {id: int}
         '''
@@ -185,8 +185,6 @@ class Moonlight:
                             data[index].update(query)
                             updated = True
 
-                    print(updated)
-
                     if not updated:
                         self.logger.write(t('loggers.error.nothing_to_update', query = query, operation = Operations.UPDATE.value), LogLevel.ERROR)
                         return None
@@ -194,8 +192,6 @@ class Moonlight:
                     self.__truncate(database_file)
 
                     self.__get_dump_func()(database_data, database_file, indent = 4, ensure_ascii = False)
-
-                    print('ok')
 
                     self.logger.write(t('loggers.success.completed', result = query, operation = Operations.UPDATE.value), LogLevel.SUCCESS)
 

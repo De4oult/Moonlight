@@ -3,6 +3,7 @@ from functools      import wraps
 
 from Moonlight.api.response_codes import ResponseCodes
 from Moonlight.config.config      import app_data, config
+from Moonlight.core.moonlight     import Moonlight
 
 access_hierarchy: dict[str, int] = app_data.get('access_hierarchy')
 
@@ -43,13 +44,37 @@ def required_fields(*fields):
     
     return decorator
 
-def get_database(func):
+
+def required_arguments(*arguments):
+    def decorator(func):
+        @wraps(func)
+        async def decorated_function(request, *args, **kwargs):
+            missing_arguments: list[str] = []
+            empty_arguments:   list[str] = []
+
+            for argument in arguments:
+                if argument not in request.json:
+                    missing_arguments.append(argument)
+                
+                elif not request.json.get(argument, None):
+                    empty_arguments.append(argument)
+
+            if missing_arguments: return json({ 'message' : 'Required arguments are not specified', 'missing_arguments' : missing_arguments }, status = ResponseCodes['BAD_REQUEST'].value)
+            if empty_arguments:   return json({ 'message' : 'Some arguments are empty',             'empty_arguments'   : empty_arguments },   status = ResponseCodes['BAD_REQUEST'].value)
+
+            return await func(request, *args, **kwargs)
+    
+        return decorated_function
+    
+    return decorator
+
+def get_database_by_id(func):
     @wraps(func)
     async def decorated_function(request, database_id, *args, **kwargs):
         existed_database = next((database for database in config.get('databases') if database.get('id') == database_id), None)
         
         if not existed_database: return json({ 'message': 'Database not found' }, status = ResponseCodes['NOT_FOUND'].value)
         
-        return await func(request, existed_database, *args, **kwargs)
+        return await func(request, Moonlight(existed_database.get('name')), *args, **kwargs)
         
     return decorated_function
