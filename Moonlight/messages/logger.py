@@ -2,8 +2,8 @@ from rich.console import Console
 from loguru       import logger
 from enum         import Enum
 
-from Moonlight.core.tools    import check_path_exist
-from Moonlight.core.messages import Messages, Style
+from Moonlight.core.tools        import check_path_exist
+from Moonlight.messages.messages import Messages, Style
 
 
 console: Console = Console()

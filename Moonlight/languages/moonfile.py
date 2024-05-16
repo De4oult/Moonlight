@@ -1,11 +1,10 @@
 from rich.console import Console
 
-from Moonlight.config.paths   import make_moonfile_path
-from Moonlight.config.config  import app_data, config
-from Moonlight.core.moonlight import Moonlight
-from Moonlight.core.methods   import Methods
-from Moonlight.core.messages  import Style
-from Moonlight.core.messages  import t
+from Moonlight.config.paths      import make_moonfile_path
+from Moonlight.config.config     import app_data, config
+from Moonlight.core.moonlight    import Moonlight
+from Moonlight.core.methods      import Methods
+from Moonlight.messages.messages import t, Style
 
 
 console = Console()
@@ -127,9 +126,6 @@ class Moonfile:
                 return
             
         self.databases.append({ 'name': name, 'author': author })
-
-    def create_messages_queue(self, *args) -> None:
-        pass
 
     def compile(self) -> None:
         '''`Compiles and applies the settings defined in the Moonfile`'''

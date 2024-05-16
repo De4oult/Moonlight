@@ -1,6 +1,6 @@
 from typing import Any
 
-from Moonlight.core.validate import Validate
+from Moonlight.schemas.validate import Validate
 
 class SchemaMeta(type):
     def __new__(cls, name, bases, attrs):

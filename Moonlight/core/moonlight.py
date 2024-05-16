@@ -4,14 +4,14 @@ from enum     import Enum
 
 import json
 
-from Moonlight.core.tools    import check_path_exist, get_filename_from_path, generate_uuid
-from Moonlight.config.paths  import make_database_path, make_logging_path
-from Moonlight.config.config import config, app_data
-from Moonlight.core.methods  import Methods
-from Moonlight.core.logger   import Logger, LogLevel
-from Moonlight.core.messages import t
-from Moonlight.core.queries  import Query
-from Moonlight.core.schemas  import Schema
+from Moonlight.core.tools        import check_path_exist, get_filename_from_path, generate_uuid
+from Moonlight.config.paths      import make_database_path, make_logging_path
+from Moonlight.config.config     import config, app_data
+from Moonlight.core.methods      import Methods
+from Moonlight.messages.logger   import Logger, LogLevel
+from Moonlight.messages.messages import t
+from Moonlight.schemas.queries   import Query
+from Moonlight.schemas.schemas   import Schema
 
 
 def init_database(path: str) -> None:

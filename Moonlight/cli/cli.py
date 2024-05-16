@@ -6,15 +6,15 @@ from InquirerPy.validator import NumberValidator
 from rich.console         import Console
 from rich.table           import Table
 
-from Moonlight.config.config  import config, app_data
-from Moonlight.api.api        import create_application
-from Moonlight.core.messages  import t, Style
-from Moonlight.cli.decorators import auth_cli
-from Moonlight.core.moonlight import Moonlight
-from Moonlight.core.methods   import Methods
-from Moonlight.core.moonfile  import Moonfile
-from Moonlight.core.tools     import is_file_exist
-from Moonlight.config.paths   import make_moonfile_path
+from Moonlight.config.config      import config, app_data
+from Moonlight.api.api            import create_application
+from Moonlight.messages.messages  import t, Style
+from Moonlight.cli.decorators     import auth_cli
+from Moonlight.core.moonlight     import Moonlight
+from Moonlight.core.methods       import Methods
+from Moonlight.languages.moonfile import Moonfile
+from Moonlight.core.tools         import is_file_exist
+from Moonlight.config.paths       import make_moonfile_path
 
 import asyncio
 import click

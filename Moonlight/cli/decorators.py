@@ -3,9 +3,9 @@ from functools      import wraps
 from InquirerPy     import prompt
 from rich.console   import Console
 
-from Moonlight.config.config   import config, app_data
-from Moonlight.core.tools    import password_hash
-from Moonlight.core.messages import t
+from Moonlight.config.config     import config, app_data
+from Moonlight.core.tools        import password_hash
+from Moonlight.messages.messages import t
 
 console: Console = Console()
 

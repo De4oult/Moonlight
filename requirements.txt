@@ -9,3 +9,4 @@ rich
 loguru
 markdown2
 aiofiles
+pyparsing
