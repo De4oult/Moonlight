@@ -68,6 +68,9 @@
             "undefined_logger_type" : "[white]LOG[/white]: accepts only [white]`{default_loggers}`[/white] loggers. Undefined logger was found [white]{undefined_logger}[/white]",
             "undefined_user"        : "[white]DATABASE[/white]: first you need to create user. Undefined user was found [white]{undefined_user}[/white]",
             "no_params_database"    : "[white]DATABASE[/white]: requires two arguments ([white]`author`[/white] is optional, default: [white]{default_author}[/white]). You have not passed [white]`database name`[/white]"
+        },
+        "schema" : {
+            "missing_fields" : "Not all fields have been transferred to the schema"
         }
     },
     "tables"        : {

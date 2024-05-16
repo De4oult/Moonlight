@@ -13,6 +13,12 @@ class Style(Enum):
     ERROR:   str = 'bold red'
     TITLE:   str = 'bold purple'
 
+    # Table
+    ID_FIELD: str         = 'cyan'
+    AUTHOR_FIELD: str     = 'yellow'
+    CREATED_AT_FIELD: str = 'magenta'
+    DEFAULT_FIELD: str    = 'white'
+
 class Messages:
     '''Сlass for working with localized messages.'''
     def __init__(self) -> None:

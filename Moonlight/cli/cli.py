@@ -8,7 +8,7 @@ from rich.table           import Table
 
 from Moonlight.config.config  import config, app_data
 from Moonlight.api.api        import create_application
-from Moonlight.core.messages  import t
+from Moonlight.core.messages  import t, Style
 from Moonlight.cli.decorators import auth_cli
 from Moonlight.core.moonlight import Moonlight
 from Moonlight.core.methods   import Methods
@@ -26,7 +26,7 @@ def serve() -> None:
     users: list[dict] = config.get('users')
 
     if not next((user.get('permissions') == 'administrator' for user in users), None):
-        console.print(t('errors.user.need_admin'), style = 'bold red')
+        console.print(t('errors.user.need_admin'), style = Style['ERROR'].value)
         return
 
     loader: AppLoader = AppLoader(factory = partial(create_application))
@@ -59,7 +59,7 @@ def configure() -> None:
             moonfile.parse_config()
             moonfile.compile()
 
-            console.print('\n' + t('success.application.configured'), style = 'bold green')
+            console.print('\n' + t('success.application.configured'), style = Style['SUCCESS'].value)
             return
 
     host = prompt({
@@ -86,7 +86,7 @@ def configure() -> None:
 
     Methods.configure(host, port, loggers)
 
-    console.print('\n' + t('success.application.configured'), style = 'bold green')
+    console.print('\n' + t('success.application.configured'), style = Style['SUCCESS'].value)
 
 @click.command()
 def locale() -> None:
@@ -146,7 +146,7 @@ def delete_user() -> None:
     }).get('username')
 
     if username == app_data.get('self_admin'):
-        console.print(t('errors.user.self_admin', self_admin_name = username), style = 'bold red')
+        console.print(t('errors.user.self_admin', self_admin_name = username), style = Style['ERROR'].value)
         return
 
     proceed = prompt({
@@ -173,12 +173,12 @@ def create_database(username: str) -> None:
     }).get('database_name')
     
     if any(database.get('name') == database_name for database in config.get('databases')):
-        console.print('\n' + t('errors.database.already_exist', database_name = database_name), style = 'bold red')
+        console.print('\n' + t('errors.database.already_exist', database_name = database_name), style = Style['ERROR'].value)
         return
 
     Moonlight(database_name, username)
 
-    console.print('\n' + t('success.database.created'), style = 'bold green')
+    console.print('\n' + t('success.database.created'), style = Style['SUCCESS'].value)
 
 @click.command()
 @auth_cli('administrator')
@@ -186,7 +186,7 @@ def delete_database(username: str) -> None:
     databases: list[dict] = config.get('databases')
 
     if len(databases) == 0:
-        console.print('\n' + t('errors.database.no_one'), style = 'bold red')
+        console.print('\n' + t('errors.database.no_one'), style = Style['ERROR'].value)
         return
 
     database_name = prompt({
@@ -199,7 +199,7 @@ def delete_database(username: str) -> None:
     database_to_delete = next((database for database in databases if database.get('name') == database_name), None)
 
     if database_to_delete.get('author') not in (username, app_data.get('self_admin')):
-        console.print('\n' + t('errors.database.not_author', database_name = database_name), style = 'bold red')
+        console.print('\n' + t('errors.database.not_author', database_name = database_name), style = Style['ERROR'].value)
         return
 
     proceed = prompt({
@@ -219,14 +219,14 @@ def delete_database(username: str) -> None:
 
     Methods.delete_database(database_name, database.filename, database.logs_path)
     
-    console.print('\n' + t('success.database.deleted'), style = 'bold green')
+    console.print('\n' + t('success.database.deleted'), style = Style['SUCCESS'].value)
 
 @click.command()
 def databases() -> None:
     databases: list[dict] = config.get('databases')
 
     if len(databases) == 0:
-        console.print('\n' + t('errors.database.no_one'), style = 'bold red')
+        console.print('\n' + t('errors.database.no_one'), style = Style['ERROR'].value)
         return
 
     table = Table(
@@ -236,10 +236,10 @@ def databases() -> None:
         padding = 1
     )
 
-    table.add_column(t('tables.databases.id'),         justify = 'center', style = 'cyan')
-    table.add_column(t('tables.databases.name'),       justify = 'center', style = 'bold green')
-    table.add_column(t('tables.databases.author'),     justify = 'center', style = 'yellow')
-    table.add_column(t('tables.databases.created_at'), justify = 'center', style = 'magenta')
+    table.add_column(t('tables.databases.id'),         justify = 'center', style = Style['ID_FIELD'].value)
+    table.add_column(t('tables.databases.name'),       justify = 'center', style = Style['SUCCESS'].value)
+    table.add_column(t('tables.databases.author'),     justify = 'center', style = Style['AUTHOR_FIELD'].value)
+    table.add_column(t('tables.databases.created_at'), justify = 'center', style = Style['CREATED_AT_FIELD'].value)
 
     for database in databases:
         table.add_row(
@@ -257,7 +257,7 @@ def database(username: str) -> None:
     databases: list[dict] = config.get('databases')
 
     if len(databases) == 0:
-        console.print('\n' + t('errors.database.no_one'), style = 'bold red')
+        console.print('\n' + t('errors.database.no_one'), style = Style['ERROR'].value)
         return
 
     database_name = prompt({
@@ -279,12 +279,12 @@ def database(username: str) -> None:
     data_to_show = asyncio.run(Moonlight(database_to_show.get('name')).all())
 
     if len(data_to_show) == 0:
-        console.print('\n' + t('info.database.empty'), style = 'blue')
+        console.print('\n' + t('info.database.empty'), style = Style['INFO'].value)
         return
 
     columns = ['id'] + sorted({ key for data in data_to_show for key in data.keys() if key != 'id' })
 
-    for column in columns:      table.add_column(column, justify = 'center', style = 'white')
+    for column in columns:      table.add_column(column, justify = 'center', style = Style['DEFAULT_FIELD'].value)
     for record in data_to_show: table.add_row(*[str(record.get(column, f'[bold red]None')) for column in columns])
 
     console.print(table)

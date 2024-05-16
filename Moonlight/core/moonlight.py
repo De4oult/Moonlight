@@ -10,6 +10,8 @@ from Moonlight.config.config import config, app_data
 from Moonlight.core.methods  import Methods
 from Moonlight.core.logger   import Logger, LogLevel
 from Moonlight.core.messages import t
+from Moonlight.core.queries  import Query
+from Moonlight.core.schemas  import Schema
 
 
 def init_database(path: str) -> None:
@@ -63,7 +65,7 @@ class Moonlight:
         file.truncate()
     
 
-    async def push(self, query: dict[str, Any]) -> int | None:
+    async def push(self, query: dict[str, Any] | Schema) -> int | None:
         '''
         `Adds an object with the given fields to the database`
 
@@ -72,6 +74,8 @@ class Moonlight:
 
         @returns {id: int}
         '''
+        query: dict[str, Any] = query() if isinstance(query, Schema) else query
+
         if not isinstance(query, dict): 
             self.logger.write(t('loggers.error.must_be_dict', typeof = type(query), operation = Operations.PUSH.value), LogLevel.ERROR)    
             return None
@@ -122,7 +126,7 @@ class Moonlight:
                 self.logger.write(t('loggers.error.operation_failed', error = error, operation = Operations.ALL.value), LogLevel.ERROR)
                 return []
 
-    async def get(self, query: dict[str, Any]) -> list[dict[str, Any] | None] | None:
+    async def get(self, query: dict[str, Any] | Query) -> list[dict[str, Any] | None] | None:
         '''
         `Get object/s from the database by query`
 
@@ -131,6 +135,8 @@ class Moonlight:
 
         @returns {object/s: list[dict[str, any]]}
         '''
+        query: dict[str, Any] = query() if isinstance(query, Query) else query
+
         if not isinstance(query, dict): 
             self.logger.write(t('loggers.error.must_be_dict', typeof = type(query), operation = Operations.GET.value), LogLevel.ERROR)    
             return None
