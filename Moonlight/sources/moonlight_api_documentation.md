@@ -44,7 +44,7 @@ Returns:
 ```json
 "data": {
     "token"   : "703104157117763434aba2d49e395ff87a6377673ef075eec1acd1cdc6c6d9aa",
-    "expires" : <expiration date :str>
+    "expires" : "<expiration date :str>"
 }
 ```
 
@@ -87,8 +87,8 @@ Returns:
             {
                 "id"         : 18173455252491,
                 "name"       : "products",
-                "path"       : <the path to the database on disk     :str>,
-                "logs_path"  : <the path to the log file on the disk :str>,
+                "path"       : "<the path to the database on disk     :str>",
+                "logs_path"  : "<the path to the log file on the disk :str>",
                 "created_at" : "04-06-2024 11:35:48",
                 "author"     : "admin"
             }
