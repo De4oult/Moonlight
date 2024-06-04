@@ -1,5 +1,5 @@
 # Moonlight
-<img src="https://i.ibb.co/5k9N9tR/Frame-4.png" alt="Moonlight Logo" height="150" />
+<img src="./Moonlight/sources/Moonlight Logo.png" alt="Moonlight Logo" height="150" />
 
 <br>
 
