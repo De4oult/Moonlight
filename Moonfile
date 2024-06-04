@@ -1,9 +1,0 @@
-PURE
-
-APP 127.0.0.1:3000
-
-LOG info, success, warning, error
-
-CREATE_USER administrator admin admin
-
-? this is a comment

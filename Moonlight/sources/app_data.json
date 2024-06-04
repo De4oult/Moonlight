@@ -16,26 +16,25 @@
         ],
         "api_keys": [],
         "databases": [],
-        "auto_schemas" : false
+        "auto_schemas": false
     },
-    "base_database_data" : {
-        "data" : []
+    "base_database_data": {
+        "data": []
     },
-    "api" : {
-        "console_show" : false
+    "api": {
+        "console_show": false
     },
-    "loggers" : [
+    "loggers": [
         "info",
         "success",
         "warning",
         "error"
     ],
-    "self_admin" : "[MOONLIGHT]",
+    "self_admin": "[MOONLIGHT]",
     "current_locale": "en",
-    "docs" : "Hallo, **welt**!",
-    "access_hierarchy"  : {
-        "viewer"        : 1,
-        "editor"        : 2,
-        "administrator" : 3
+    "access_hierarchy": {
+        "viewer": 1,
+        "editor": 2,
+        "administrator": 3
     }
 }

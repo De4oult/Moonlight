@@ -35,3 +35,25 @@ class Validate:
             return value
         
         return validator
+    
+    @staticmethod
+    def min_value(min_value: int) -> Any:
+        def validator(value):
+            if value:
+                if value < min_value:
+                    raise ValueError(f'Value must be at greater than {min_value}')
+                    
+            return value
+        
+        return validator
+
+    @staticmethod
+    def max_value(max_value: int) -> Any:
+        def validator(value):
+            if value:
+                if value > max_value:
+                    raise ValueError(f'Value must be at less than {max_value}')
+                    
+            return value
+        
+        return validator
