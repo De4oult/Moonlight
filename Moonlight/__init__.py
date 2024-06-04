@@ -1,5 +1,9 @@
 """
-PACKAGE INFO
+Moonlight v2.0.2
+
+Moonlight is a lightweight JSON-database for Python.
+
+Github: https://github.com/De4oult/Moonlight/
 """
 
 from .core.moonlight    import Moonlight
