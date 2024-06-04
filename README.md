@@ -11,9 +11,9 @@ pip install MoonlightDB
 ```
 
 ### Docs
-* ![]()
-* ![]()
-* ![]()
+* [Moonlight CLI Documentation](https://github.com/De4oult/Moonlight/blob/main/Moonlight/sources/moonlight_cli_documentation.md)
+* [Moonlight Python Documentation](https://github.com/De4oult/Moonlight/blob/main/Moonlight/sources/moonlight_class_documentation.md)
+* [Moonlight API Documentation](https://github.com/De4oult/Moonlight/blob/main/Moonlight/sources/moonlight_api_documentation.md)
 
 ## Author
 ```
