@@ -303,7 +303,7 @@ await database.get(GetByUsername('@de4oult'))
 #     }
 # ]
 await database.get(GetByDescription)
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # []
 ```
 
