@@ -1,5 +1,5 @@
 # Moonlight Database
-<img src="./Moonlight/sources/Moonlight Logo.png" alt="Moonlight Logo" height="150" />
+<img src="https://github.com/De4oult/Moonlight/blob/main/Moonlight/sources/Moonlight%20Logo.png?raw=true" alt="Moonlight Logo" height="150" />
 
 <br>
 

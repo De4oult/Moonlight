@@ -7,6 +7,5 @@ pick
 InquirerPy
 rich
 loguru
-markdown2
+markdown
 aiofiles
-pyparsing
